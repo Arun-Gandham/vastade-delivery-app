@@ -330,7 +330,18 @@ Swagger UI usage:
 Open http://localhost:5000/api-docs
 Use the Authorize button to paste Bearer <access_token>
 Run protected APIs directly from Swagger using Try it out
-Use request bodies, query params, path params, and multipart upload from the UI
+Use request bodies, query params, path params, and the JSON upload-signing flow from the UI
+```
+
+## Image handling rules
+
+```txt
+Image binaries must upload directly to S3
+Database records must store only S3 object keys
+Frontend must render using resolved browser-safe image URLs
+Do not send s3:// object paths to the browser for img src usage
+Private buckets must use signed read URLs from the backend
+Public buckets may use S3_PUBLIC_BASE_URL-based HTTPS URLs
 ```
 
 ---
@@ -418,4 +429,3 @@ Customer wallet
 AI product recommendation
 Multi-village expansion
 ```
-

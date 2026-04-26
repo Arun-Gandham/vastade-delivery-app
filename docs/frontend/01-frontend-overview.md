@@ -83,6 +83,11 @@ Captain delivery update
 Admin visibility
 Clean dashboard UI
 Good mobile experience
+Clean customer storefront with custom header, footer, location prompt, and nearby-shop aware home page
+Direct-to-S3 uploads with object-key storage and resolved image URLs
+Shared full-width customer shell reused across all customer pages
+Public landing page that surfaces live categories and products through a storefront-style header, search, and footer
+Shared enterprise dashboard chrome across admin, shop-owner, captain, and super-admin role surfaces
 ```
 
 Do not build future features like wallet, AI recommendation, complex settlement, live map tracking, or auto captain assignment unless the docs are updated.

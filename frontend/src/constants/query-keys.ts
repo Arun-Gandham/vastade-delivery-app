@@ -2,7 +2,7 @@ export const queryKeys = {
   authUser: ["auth-user"],
   captainProfile: ["captain-profile"],
   categories: ["categories"],
-  shops: ["shops"],
+  shops: (params?: Record<string, unknown>) => ["shops", params],
   shop: (shopId: string) => ["shop", shopId],
   products: (filters?: Record<string, unknown>) => ["products", filters],
   product: (productId: string, shopId?: string) => ["product", productId, shopId],

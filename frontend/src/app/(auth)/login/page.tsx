@@ -97,14 +97,7 @@ function LoginPageContent() {
               ? `Backend unreachable at ${apiConfig.baseURL}`
               : "Checking backend connection..."}
         </div>
-        <form
-          className="space-y-4"
-          noValidate
-          onSubmit={(event) => {
-            event.preventDefault();
-            void submitLogin(event);
-          }}
-        >
+        <form className="space-y-4" noValidate onSubmit={submitLogin}>
           <Input label="Mobile" inputMode="numeric" placeholder="9876543210" error={errors.mobile?.message} {...register("mobile")} />
           <Input label="Password" type="password" placeholder="Enter your password" error={errors.password?.message} {...register("password")} />
           {errors.root?.message ? <p className="text-sm text-[var(--color-danger)]">{errors.root.message}</p> : null}

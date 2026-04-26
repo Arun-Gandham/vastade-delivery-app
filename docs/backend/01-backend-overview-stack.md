@@ -30,7 +30,7 @@ Cache: Redis
 Queue: BullMQ
 Authentication: JWT + Refresh Token
 Validation: Zod / class-validator
-File Storage: S3 / Cloudinary / Local for MVP
+File Storage: S3 with presigned upload and read URLs
 Logging: Pino / Winston
 API Docs: Swagger / OpenAPI
 Deployment: Docker + Nginx

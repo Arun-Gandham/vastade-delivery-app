@@ -27,7 +27,7 @@ export const CustomerAppShell = ({ children }: { children: ReactNode }) => {
 
   return (
     <ProtectedRoute>
-      <div className="pb-24 md:pb-0">
+      <div className="min-h-screen bg-white pb-24 md:pb-0">
         <CustomerStorefrontHeader
           locationLabel={locationLabel}
           cartCount={cartSummary.itemCount}

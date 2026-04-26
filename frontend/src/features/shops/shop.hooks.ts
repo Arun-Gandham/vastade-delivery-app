@@ -6,7 +6,7 @@ import { shopApi } from "@/features/shops/shop.api";
 
 export const useNearbyShopsQuery = (params?: { village?: string; pincode?: string }) =>
   useQuery({
-    queryKey: queryKeys.shops,
+    queryKey: queryKeys.shops(params),
     queryFn: () => shopApi.nearby(params),
   });
 
@@ -25,7 +25,7 @@ export const useShopMutations = () => {
         shopApi.updateOpenStatus(shopId, isOpen),
       onSuccess: (_, variables) => {
         queryClient.invalidateQueries({ queryKey: queryKeys.shop(variables.shopId) });
-        queryClient.invalidateQueries({ queryKey: queryKeys.shops });
+        queryClient.invalidateQueries({ queryKey: ["shops"] });
       },
     }),
   };

@@ -9,19 +9,52 @@ import { PageContainer } from "@/components/shared/page-container";
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
 import { useCartMutations } from "@/features/cart/cart.hooks";
+import { useAddressesQuery } from "@/features/addresses/address.hooks";
 import { useCategoriesQuery } from "@/features/categories/category.hooks";
 import { useProductsQuery } from "@/features/products/product.hooks";
+import { useNearbyShopsQuery } from "@/features/shops/shop.hooks";
 import { getErrorMessage } from "@/lib/utils/errors";
 import { useUIStore } from "@/store/ui-store";
 
 function CustomerProductsPageContent() {
   const searchParams = useSearchParams();
-  const { selectedShopId } = useUIStore();
+  const { selectedShopId, selectedAddressId, customerLocation } = useUIStore();
   const [search, setSearch] = useState(searchParams.get("q") || "");
   const [categoryId, setCategoryId] = useState(searchParams.get("categoryId") || "");
+  const addressesQuery = useAddressesQuery();
+  const defaultAddress = useMemo(
+    () =>
+      (addressesQuery.data || []).find((address) => address.id === selectedAddressId) ||
+      (addressesQuery.data || []).find((address) => address.isDefault) ||
+      addressesQuery.data?.[0],
+    [addressesQuery.data, selectedAddressId]
+  );
+  const shopsQuery = useNearbyShopsQuery(
+    defaultAddress
+      ? {
+          village: defaultAddress.village,
+          pincode: defaultAddress.pincode,
+        }
+      : customerLocation
+        ? undefined
+        : undefined
+  );
+  const activeShopId = useMemo(() => {
+    if (!selectedShopId) {
+      return shopsQuery.data?.[0]?.id;
+    }
+
+    if (!shopsQuery.data?.length) {
+      return selectedShopId;
+    }
+
+    return shopsQuery.data.some((shop) => shop.id === selectedShopId)
+      ? selectedShopId
+      : shopsQuery.data[0].id;
+  }, [selectedShopId, shopsQuery.data]);
   const categoriesQuery = useCategoriesQuery();
-  const productsQuery = useProductsQuery({ shopId: selectedShopId, search, categoryId: categoryId || undefined });
-  const cartMutations = useCartMutations(selectedShopId);
+  const productsQuery = useProductsQuery({ shopId: activeShopId, search, categoryId: categoryId || undefined });
+  const cartMutations = useCartMutations(activeShopId);
 
   useEffect(() => {
     setSearch(searchParams.get("q") || "");
@@ -53,8 +86,8 @@ function CustomerProductsPageContent() {
                 key={product.id}
                 product={product}
                 onAdd={
-                  selectedShopId
-                    ? () => cartMutations.addItem.mutate({ productId: product.id, quantity: 1, shopId: selectedShopId })
+                  activeShopId
+                    ? () => cartMutations.addItem.mutate({ productId: product.id, quantity: 1, shopId: activeShopId })
                     : undefined
                 }
                 isAdding={cartMutations.addItem.isPending}

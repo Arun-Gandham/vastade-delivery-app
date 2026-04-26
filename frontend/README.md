@@ -1,39 +1,106 @@
-# Zepto Frontend MVP
+# Quick Commerce Frontend
 
-Production-ready MVP for a quick-commerce grocery delivery platform.
+Next.js frontend for the Quick Commerce MVP. The app includes a branded customer storefront and role-based areas for customer, captain, shop owner, admin, and super admin users.
 
-## Tech Stack
-- Next.js 15+
+## Tech stack
+
+- Next.js
 - TypeScript
 - Tailwind CSS
-- shadcn/ui patterns
-- lucide-react
 - TanStack Query
 - Zustand
-- react-hook-form + zod
+- react-hook-form
+- zod
 - axios
 
-## Structure
-- src/app: App routes and layouts
-- src/components: Reusable UI components
-- src/config: Theme, API, and other configs
-- src/lib: API client and utilities
-- src/features: Typed API modules, hooks, and validations
+## Main structure
+
+- `src/app`: route tree and layouts
+- `src/components`: reusable UI and storefront components
+- `src/config`: app, API, and theme configuration
+- `src/features`: typed APIs, hooks, and validation
+- `src/store`: shared UI state
+- `src/lib`: utilities and API client
+
+## Customer storefront
+
+The current customer experience includes:
+
+- shared full-width storefront header
+- shared compact storefront footer
+- location prompt when no saved delivery context exists
+- nearby shop discovery
+- category sections
+- product sections based on the active nearby shop
+- recent order section
+- login and logout affordances in the storefront header
+
+The storefront now guards against stale persisted state by falling back to the first valid nearby shop when the previous selection is no longer valid.
+The same `CustomerAppShell` is reused across all customer pages so the customer-facing frame stays consistent.
+
+## Public landing page
+
+The public `/` route now behaves like a storefront instead of a plain marketing page.
+
+It includes:
+
+- a Zepto-style header
+- browser-based location label in the header
+- storefront search bar
+- catalog-driven category tiles
+- catalog-driven product sections
+- storefront footer with links and category shortcuts
+
+## Shared role UI
+
+The project now uses a more unified shared UI layer across role surfaces:
+
+- refined public and customer storefront headers
+- compact shared customer footer
+- enterprise-style dashboard sidebar and topbar for admin and shop-owner flows
+- polished floating mobile bottom navigation for customer and captain flows
 
 ## Setup
-1. Copy `.env.example` to `.env` and fill values
-2. `npm install`
-3. `npm run dev`
 
-## Deployment
-- See Dockerfile for production build
+```bash
+npm install
+cp .env.example .env.local
+npm run dev
+```
+
+Default app URL:
+
+```txt
+http://localhost:3000
+```
+
+## Required environment variables
+
+```env
+NEXT_PUBLIC_APP_NAME=Quick Commerce
+NEXT_PUBLIC_API_BASE_URL=http://localhost:5000/api/v1
+NEXT_PUBLIC_DEFAULT_LATITUDE=
+NEXT_PUBLIC_DEFAULT_LONGITUDE=
+NEXT_PUBLIC_SUPPORT_PHONE=
+NEXT_PUBLIC_SUPPORT_EMAIL=
+```
+
+## Image uploads
+
+Image uploads use a direct-to-S3 flow.
+
+Behavior:
+
+1. Frontend requests an authenticated upload signature from the backend.
+2. Selected files upload directly from the browser to S3.
+3. Form state stores only the returned object key.
+4. UI previews use the returned or resolved browser-safe `imageUrl`.
+
+This keeps the Next.js app out of the file-storage path and matches the backend contract needed for future mobile clients.
 
 ## Verification
-- `npm run lint`
-- `npm test`
-- `npm run build`
 
-## Image Uploads
-- Frontend requests authenticated presigned upload details from the backend.
-- Selected files upload directly from the client to S3.
-- Forms store only the returned remote image URL and reuse the same contract for future mobile clients.
+```bash
+npm run build
+npm test
+```

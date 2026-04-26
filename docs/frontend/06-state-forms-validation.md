@@ -34,7 +34,8 @@ Use local file pickers instead of manual URL entry
 Show a local preview immediately after file selection
 Keep showing the saved remote preview when editing an existing record
 Upload directly to S3 before final form submission
-Store only the returned image URL in form state
+Store only the returned object key in form state
+Use the resolved browser-safe imageUrl only for rendering and preview
 Allow replacing or clearing an uploaded image before save
 ```
 

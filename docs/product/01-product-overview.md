@@ -1,270 +1,63 @@
 # Product Overview
 
-## Backend product purpose
+This repository implements a quick-commerce grocery delivery MVP for a local pilot.
 
-# Overview
+## Platform scope
 
-## Purpose
+The system supports:
 
-This document is a **backend-only API development specification** for building a quick-commerce grocery delivery platform similar to Zepto / Instamart, but targeted for a **small village or local-area pilot**.
+- customer web app
+- future customer mobile app
+- captain or delivery partner app
+- shop owner or store manager panel
+- admin and super-admin web panel
 
-The backend should support direct integration with:
+## Backend product direction
 
-* Customer mobile app
-* Customer web app
-* Captain / delivery partner mobile app
-* Admin web panel
-* Shop owner / store manager web or mobile panel
-
-This document is written so that a developer or Codex-style coding agent can generate the full backend end-to-end.
-
----
-
----
-
-# 1. Recommended Backend Stack
+Recommended backend stack:
 
 ```txt
 Runtime: Node.js
 Language: TypeScript
-Framework: Express.js or NestJS
+Framework: Express.js
 Database: MySQL
 ORM: Prisma
 Cache: Redis
 Queue: BullMQ
 Authentication: JWT + Refresh Token
-Validation: Zod / class-validator
-File Storage: S3 / Cloudinary / Local for MVP
-Logging: Pino / Winston
-API Docs: Swagger / OpenAPI
+Validation: Zod
+File Storage: S3 with presigned upload and read URLs
+Logging: Pino or Winston
+API Docs: Swagger or OpenAPI
 Deployment: Docker + Nginx
 ```
 
-Recommended for rapid production-level development:
+## Frontend product direction
+
+Recommended frontend shape:
 
 ```txt
-Node.js + TypeScript + Express + Prisma + MySQL + Redis
-```
-
----
-
----
-
-# 2. User Roles
-
-```txt
-SUPER_ADMIN
-ADMIN
-SHOP_OWNER
-STORE_MANAGER
-CUSTOMER
-CAPTAIN
-```
-
-| Role          | Description                                |
-| ------------- | ------------------------------------------ |
-| SUPER_ADMIN   | Platform owner, full access                |
-| ADMIN         | Internal operations team                   |
-| SHOP_OWNER    | Owns one or multiple shops/stores          |
-| STORE_MANAGER | Manages orders and inventory for one store |
-| CUSTOMER      | Places grocery orders                      |
-| CAPTAIN       | Delivery partner                           |
-
----
-
----
-
-# 3. Main Modules
-
-```txt
-Auth Module
-User Module
-Customer Module
-Address Module
-Shop / Store Module
-Category Module
-Product Module
-Inventory Module
-Cart Module
-Order Module
-Payment Module
-Captain / Delivery Module
-Coupon Module
-Notification Module
-Upload Module
-Admin Dashboard Module
-Shop Owner Dashboard Module
-Audit Log Module
-```
-
----
-
----
-
-# 4. API Base URL
-
-```txt
-Local: http://localhost:5000/api/v1
-Production: https://api.yourdomain.com/api/v1
-```
-
----
-
----
-
-# 5. Standard API Response Format
-
-## Success Response
-
-```json
-{
-  "success": true,
-  "message": "Success message",
-  "data": {},
-  "meta": {}
-}
-```
-
-## Error Response
-
-```json
-{
-  "success": false,
-  "message": "Error message",
-  "errorCode": "ERROR_CODE",
-  "errors": []
-}
-```
-
----
-
----
-
-# 6. Authentication Rules
-
-```txt
-Access Token: 15 minutes
-Refresh Token: 7 to 30 days
-Auth Header: Authorization: Bearer <access_token>
-```
-
-For fast MVP:
-
-```txt
-Mobile + Password login
-```
-
-Later:
-
-```txt
-Mobile OTP
-WhatsApp OTP
-Google login
-```
-
-Password rules:
-
-```txt
-Minimum 8 characters
-At least 1 uppercase letter
-At least 1 lowercase letter
-At least 1 number
-At least 1 special character
-```
-
----
-
-
----
-
-## Frontend product purpose
-
-# Overview
-
-## Purpose
-
-This document defines the frontend specification for a quick-commerce grocery delivery MVP.
-
-The frontend must support:
-
-```txt
-Customer web/mobile experience
-Captain / delivery partner experience
-Shop owner / store manager panel
-Admin panel
-Super admin panel
-```
-
-The application should look modern, smooth, mobile-first, and product-ready.
-
-The UI can be inspired by modern grocery and food delivery apps, but it must use original design, original components, and configurable brand colors.
-
-## Product goal
-
-Build a clean and usable MVP where:
-
-```txt
-Customers can browse shops and products
-Customers can add products to cart
-Customers can place orders
-Customers can track order status
-Shop owners can manage inventory and orders
-Captains can accept, pick up, and deliver orders
-Admins can manage shops, products, orders, captains, and reports
-Super admins can access everything
-```
-
-## Frontend type
-
-Use a single Next.js application with role-based dashboards.
-
-Recommended:
-
-```txt
-One codebase
+Single Next.js codebase
 Role-based route protection
-Responsive layouts
-Mobile-first customer and captain screens
-Desktop-friendly admin and shop owner panels
+Mobile-first customer and captain flows
+Desktop-friendly admin and shop-owner panels
+Branded customer storefront for the public shopping experience
 ```
 
-## Primary users
+## MVP goals
 
-```txt
-CUSTOMER
-CAPTAIN
-SHOP_OWNER
-STORE_MANAGER
-ADMIN
-SUPER_ADMIN
-```
+- customers can browse nearby shops and products
+- customers can manage addresses and place orders
+- customers can track recent orders
+- shop owners can manage inventory and order handling
+- captains can accept and deliver assigned orders
+- admins can manage catalog, orders, shops, captains, and reports
 
-## Backend dependency
+## Current implementation notes
 
-Frontend must use the backend APIs from:
-
-```txt
-docs/backend/
-```
-
-The backend base URL must come from environment variables.
-
-## MVP priority
-
-For MVP, focus on:
-
-```txt
-Simple login
-Correct role redirection
-Customer product ordering flow
-Correct cart behavior
-Correct order placement
-Shop owner order confirmation
-Captain delivery update
-Admin visibility
-Clean dashboard UI
-Good mobile experience
-```
-
-Do not build future features like wallet, AI recommendation, complex settlement, live map tracking, or auto captain assignment unless the docs are updated.
-
+- The customer homepage uses a custom storefront header and footer.
+- Location prompting appears when there is no saved delivery context.
+- Nearby shop selection falls back safely if persisted state becomes stale.
+- Images upload directly to S3.
+- The database stores only S3 object keys.
+- Read APIs return browser-safe image URLs for rendering.

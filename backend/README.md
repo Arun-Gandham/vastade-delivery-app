@@ -1,6 +1,6 @@
 # Quick Commerce Backend
 
-Production-oriented TypeScript/Express backend for a small-scale Zepto/Instamart-style grocery delivery platform. The implementation follows the provided blueprint and includes auth, profile, addresses, shops, categories, products, inventory, cart, orders, captains, notifications, uploads, dashboards, Prisma schema, Redis/BullMQ wiring, and Docker assets.
+TypeScript and Express backend for the Quick Commerce MVP. The backend exposes role-based APIs for auth, users, addresses, shops, categories, products, inventory, cart, orders, captains, notifications, uploads, and dashboards.
 
 ## Stack
 
@@ -13,19 +13,6 @@ Production-oriented TypeScript/Express backend for a small-scale Zepto/Instamart
 - BullMQ
 - Zod
 - JWT
-
-Example MySQL connection string:
-
-```env
-DATABASE_URL=mysql://root:password@localhost:3306/quick_commerce
-```
-
-Redis is optional. Enable it only when you want BullMQ-backed jobs:
-
-```env
-USE_REDIS=true
-REDIS_URL=redis://localhost:6379
-```
 
 ## Setup
 
@@ -50,7 +37,7 @@ Swagger:
 http://localhost:5000/api-docs
 ```
 
-## Main Modules
+## Main modules
 
 - `src/modules/auth`
 - `src/modules/users`
@@ -66,23 +53,57 @@ http://localhost:5000/api-docs
 - `src/modules/uploads`
 - `src/modules/dashboard`
 
-Each module follows:
+## S3 image flow
 
-```txt
-routes / controller / service / repository / validation / types
+The backend now uses direct S3 uploads and does not keep uploaded image binaries on the API server.
+
+Current contract:
+
+1. Client calls authenticated `POST /uploads/image` with `filename`, `contentType`, and `folder`.
+2. Backend validates the request and returns:
+   - `uploadUrl`
+   - `method`
+   - `headers`
+   - `key`
+   - `imageUrl`
+3. Client uploads directly to S3 using the signed request.
+4. Client stores only the returned object key in catalog, profile, or delivery-proof payloads.
+5. Read APIs resolve browser-safe image URLs before sending responses.
+
+Response behavior:
+
+- Categories and products expose `imageKey` and `imageUrl`
+- User profile responses expose `profileImage` and `profileImageUrl`
+- Private buckets return presigned `GET` URLs
+- Public buckets return public HTTPS URLs based on `S3_PUBLIC_BASE_URL`
+
+## Important environment variables
+
+```env
+DATABASE_URL=mysql://root:password@localhost:3306/quick_commerce
+USE_REDIS=true
+REDIS_URL=redis://localhost:6379
+S3_ACCESS_KEY=
+S3_SECRET_KEY=
+S3_BUCKET=zepto-qa
+S3_REGION=eu-north-1
+S3_ENDPOINT=
+S3_PUBLIC_BASE_URL=https://zepto-qa.s3.eu-north-1.amazonaws.com/qa
+S3_KEY_PREFIX=qa
+S3_UPLOAD_URL_EXPIRES_IN=300
+S3_READ_URL_EXPIRES_IN=3600
+S3_BUCKET_PUBLIC=false
 ```
 
-## Notable Behaviors
+## Notable behavior
 
-- JWT access and refresh token flow with persisted sessions.
-- Transactional order placement, cancellation, captain delivery, and inventory adjustment.
-- Soft delete behavior for core catalog entities through `isActive`.
-- Authenticated presigned S3 upload flow for images, with direct client uploads and URL-only persistence.
-- Admin and shop dashboard summary endpoints.
-- Queue bootstrap for order notifications using BullMQ.
-- Payment, coupon, captain assignment, and reporting API surfaces aligned with the backend docs.
+- JWT access and refresh token flow with persisted sessions
+- Transactional order placement, cancellation, captain delivery, and inventory adjustment
+- Soft-delete behavior for catalog entities through `isActive`
+- Customer-facing APIs that can be reused by the web frontend and future mobile apps
+- Queue bootstrap for order notifications using BullMQ
 
-## Seed Users
+## Seed users
 
 - Super admin: `9999999998` / `SuperAdmin@123`
 - Admin: `9999999999` / `Admin@123`
@@ -90,16 +111,15 @@ routes / controller / service / repository / validation / types
 - Customer: `7777777777` / `Customer@123`
 - Captain: `6666666666` / `Captain@123`
 
-If you want a guaranteed first-login platform account without reseeding, set `SUPER_ADMIN_MOBILE` and `SUPER_ADMIN_PASSWORD` in `.env`. The server will bootstrap or refresh that super admin on startup.
+## Build and test
+
+```bash
+npm run build
+npm test
+```
 
 ## Docker
 
 ```bash
 docker compose up -d --build
-```
-
-## Test
-
-```bash
-npm test
 ```

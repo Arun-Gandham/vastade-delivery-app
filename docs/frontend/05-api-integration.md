@@ -69,9 +69,10 @@ Image uploads must use a two-step flow so the same APIs work for web and mobile 
 
 ```txt
 1. POST /uploads/image with filename, contentType, and folder.
-2. Receive uploadUrl, fileUrl, method, headers, and key.
+2. Receive uploadUrl, imageUrl, method, headers, and key.
 3. Upload the binary file directly from the client to S3 using the signed request.
-4. Save only fileUrl in the form payload sent to profile/category/product/order APIs.
+4. Save only key in the form payload sent to profile/category/product/order APIs.
+5. Use the returned imageUrl only for preview and rendering.
 ```
 
 Required behavior:
@@ -81,6 +82,9 @@ Never send image binaries through the Next.js server
 Never persist images to local frontend or backend storage
 Treat the backend upload endpoint as an authenticated signing API
 Allow the same signing contract to be reused by mobile apps
+Use imageUrl only for display and preview
+Use key or profileImage for submission depending on the API field name
+Never render s3:// object paths directly in the browser
 ```
 
 ## Standard response handling

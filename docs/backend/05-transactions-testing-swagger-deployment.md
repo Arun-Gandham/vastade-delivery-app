@@ -174,7 +174,7 @@ Swagger UI usage:
 Open http://localhost:5000/api-docs
 Use the Authorize button to paste Bearer <access_token>
 Run protected APIs directly from Swagger using Try it out
-Use request bodies, query params, path params, and multipart upload from the UI
+Use request bodies, query params, path params, and the upload-signing JSON contract from the UI
 ```
 
 ---

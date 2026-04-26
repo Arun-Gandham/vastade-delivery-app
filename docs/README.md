@@ -1,54 +1,51 @@
-# Full Stack Product Documentation
+# Documentation
 
-This documentation is organized into three layers:
+This folder contains the current implementation reference for the Quick Commerce repo.
+
+## Structure
 
 ```txt
 docs/
-  product/   -> shared product truth for both backend and frontend
-  backend/   -> backend implementation instructions
-  frontend/  -> frontend implementation instructions
-  _original-unchanged/ -> original uploaded files copied unchanged for reference
+  product/              shared product truth and API contract
+  backend/              backend implementation reference
+  frontend/             frontend implementation reference
+  _original-unchanged/  original source material kept for comparison
 ```
 
-## How AI should read this
+## Current platform state reflected here
 
-### For full-stack development
+- customer storefront with custom header, footer, location prompt, and nearby-shop-aware homepage
+- direct-to-S3 image uploads through backend-issued presigned URLs
+- database persistence of S3 object keys instead of full image URLs
+- API responses that resolve browser-safe `imageUrl` fields for the frontend
+- support for both public S3 buckets and private buckets with signed read URLs
 
-Read in this order:
+## Recommended reading order
+
+Full-stack:
 
 1. `docs/product/README.md`
-2. all files inside `docs/product/`
+2. `docs/product/`
 3. `docs/backend/README.md`
-4. all files inside `docs/backend/`
+4. `docs/backend/`
 5. `docs/frontend/README.md`
-6. all files inside `docs/frontend/`
+6. `docs/frontend/`
 
-### For backend-only development
-
-Read:
+Backend-only:
 
 1. `docs/product/README.md`
 2. `docs/product/`
 3. `docs/backend/README.md`
 4. `docs/backend/`
 
-### For frontend-only development
-
-Read:
+Frontend-only:
 
 1. `docs/product/README.md`
 2. `docs/product/`
 3. `docs/frontend/README.md`
 4. `docs/frontend/`
 
-## Important
+## Notes
 
-The original uploaded backend and frontend docs are copied unchanged under:
-
-```txt
-docs/_original-unchanged/
-```
-
-This means an AI developer can still verify the old full scope if needed.
-
-The organized docs are structured so the final implementation scope remains the same as the original backend + frontend docs.
+- The files under `docs/_original-unchanged/` are kept untouched for traceability.
+- The files outside that folder should match the current codebase, not the earlier source material.

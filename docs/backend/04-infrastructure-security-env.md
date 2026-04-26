@@ -94,7 +94,9 @@ Issue presigned S3 upload URLs from authenticated backend APIs
 Validate upload intent payloads before signing
 Restrict uploads to approved image mime types
 Limit image size before issuing upload URLs
-Persist only S3 object URLs or keys in database records
+Persist only S3 object keys in database records
+Resolve browser-safe image URLs in API responses
+Use signed GET URLs when the bucket is private
 Do not proxy or permanently store uploaded images on the backend server
 Use parameterized DB queries through Prisma
 Do not expose stack traces in production
@@ -128,6 +130,8 @@ S3_ENDPOINT=
 S3_PUBLIC_BASE_URL=
 S3_KEY_PREFIX=
 S3_UPLOAD_URL_EXPIRES_IN=300
+S3_READ_URL_EXPIRES_IN=3600
+S3_BUCKET_PUBLIC=false
 WHATSAPP_API_TOKEN=
 SMS_API_KEY=
 ```
@@ -137,9 +141,38 @@ SMS_API_KEY=
 ```txt
 1. Client sends authenticated upload intent to backend with filename, contentType, and folder.
 2. Backend validates mime type, file size policy, and S3 configuration.
-3. Backend returns a presigned PUT URL plus the final public file URL.
+3. Backend returns a presigned PUT URL, the final object key, and a browser-safe preview imageUrl.
 4. Web or mobile client uploads the file directly to S3.
-5. Client stores only the returned file URL in profile/category/product/order payloads.
+5. Client stores only the returned object key in profile/category/product/order payloads.
+6. Read APIs return both the stored key and a browser-safe imageUrl.
+```
+
+## 18. Public vs Private Bucket Read Logic
+
+```txt
+If S3_BUCKET_PUBLIC=true:
+  imageUrl = S3_PUBLIC_BASE_URL + "/" + normalized relative key when needed
+
+If S3_BUCKET_PUBLIC=false:
+  backend returns a presigned GET URL with inline content disposition
+```
+
+## 19. Suggested S3 CORS
+
+```json
+[
+  {
+    "AllowedHeaders": ["*"],
+    "AllowedMethods": ["GET", "PUT", "POST", "HEAD"],
+    "AllowedOrigins": [
+      "http://localhost:3000",
+      "http://localhost:5173",
+      "https://yourdomain.com"
+    ],
+    "ExposeHeaders": ["ETag"],
+    "MaxAgeSeconds": 3000
+  }
+]
 ```
 
 ---

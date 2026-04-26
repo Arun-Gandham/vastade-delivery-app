@@ -1,4 +1,6 @@
-## 2026-04-26 — Indtula pilot test changes added
+# Changelog
+
+## 2026-04-26 - Indtula pilot test changes
 
 ### Type
 Full-stack
@@ -7,7 +9,7 @@ Full-stack
 Implemented
 
 ### Summary
-Pilot test changes for Indtula integration and workflow updates completed today.
+Pilot test changes for the Indtula workflow were completed across the order flow and supporting frontend screens.
 
 ### Updated docs
 - docs/product/03-user-flows.md
@@ -26,9 +28,8 @@ Pilot test changes for Indtula integration and workflow updates completed today.
 - frontend/src/app/orders/[orderId]/page.tsx
 
 ### Verification
-- Indtula pilot test workflow executes as expected.
-- Backend and frontend build successfully.
-- All pilot test scenarios pass.
+- Pilot test workflow executes as expected.
+- Backend and frontend builds succeeded.
 
 ## 2026-04-26 - S3 image storage rollout
 
@@ -39,7 +40,7 @@ Full-stack
 Implemented
 
 ### Summary
-All image handling was moved off the backend/frontend servers to direct S3 uploads. Backend APIs now issue presigned upload targets, frontend forms upload local files directly to S3, and application records persist only the final image URL so the same APIs can be reused by mobile apps.
+Image handling was moved off the backend and frontend servers to direct S3 uploads. The backend now signs uploads, persists only S3 object keys, and resolves browser-safe `imageUrl` values on read. The same API contract can be reused by web and mobile clients.
 
 ### Updated docs
 - docs/backend/04-infrastructure-security-env.md
@@ -50,14 +51,15 @@ All image handling was moved off the backend/frontend servers to direct S3 uploa
 - frontend/README.md
 
 ### Files changed
-- backend/src/app.ts
 - backend/src/config/env.ts
-- backend/src/docs/swagger.ts
-- backend/src/modules/uploads/upload.controller.ts
+- backend/src/config/s3.ts
+- backend/src/core/utils/s3-assets.ts
 - backend/src/modules/uploads/upload.routes.ts
 - backend/src/modules/uploads/upload.service.ts
-- backend/src/modules/uploads/upload.types.ts
 - backend/src/modules/uploads/upload.validation.ts
+- backend/src/modules/categories/category.service.ts
+- backend/src/modules/products/product.service.ts
+- backend/src/modules/users/user.service.ts
 - backend/.env.example
 - frontend/src/components/shared/image-upload-field.tsx
 - frontend/src/features/uploads/upload.api.ts
@@ -69,6 +71,101 @@ All image handling was moved off the backend/frontend servers to direct S3 uploa
 - frontend/src/app/(captain)/captain/orders/[orderId]/page.tsx
 
 ### Verification
-- Backend no longer exposes a local static uploads directory.
-- Image entry points now upload local files directly to S3 and save only returned URLs.
-- Create and edit flows show image previews before and after upload.
+- Backend no longer depends on local image storage.
+- Image entry points upload local files directly to S3.
+- Forms store only object keys and render previews from resolved image URLs.
+
+## 2026-04-26 - Customer storefront cleanup and docs refresh
+
+### Type
+Frontend and documentation
+
+### Status
+Implemented
+
+### Summary
+The customer storefront was cleaned up, encoding issues were removed, location prompting was stabilized, stale selected-shop state now falls back safely, and the docs were refreshed to match the current code.
+
+### Updated docs
+- docs/README.md
+- docs/backend/01-backend-overview-stack.md
+- docs/backend/04-infrastructure-security-env.md
+- docs/backend/05-transactions-testing-swagger-deployment.md
+- docs/frontend/01-frontend-overview.md
+- docs/frontend/04-routes-pages.md
+- docs/frontend/05-api-integration.md
+- docs/frontend/06-state-forms-validation.md
+- docs/frontend/07-components-layouts.md
+- docs/frontend/CHANGELOG.md
+- docs/product/01-product-overview.md
+- docs/product/04-api-contracts.md
+- docs/product/05-business-rules-statuses.md
+- backend/README.md
+- frontend/README.md
+- README.md
+
+### Files changed
+- frontend/src/components/customer/customer-footer.tsx
+- frontend/src/app/(customer)/customer/page.tsx
+- frontend/src/app/(customer)/customer/products/page.tsx
+- frontend/src/constants/query-keys.ts
+- frontend/src/features/shops/shop.hooks.ts
+
+### Verification
+- Customer storefront renders with the custom header, footer, location banner, and homepage sections intact.
+- Nearby shop and product queries recover from stale persisted state.
+- Frontend build succeeds after cleanup.
+
+## 2026-04-26 - Shared full-width customer shell refresh
+
+### Type
+Frontend and documentation
+
+### Status
+Implemented
+
+### Summary
+The shared customer header and footer were refreshed into a full-width storefront layout. The same shell remains reused across all customer pages, so home, shops, products, orders, addresses, notifications, checkout, cart, and profile all keep a consistent customer-facing frame.
+
+### Updated docs
+- docs/frontend/01-frontend-overview.md
+- docs/frontend/04-routes-pages.md
+- docs/frontend/07-components-layouts.md
+- docs/frontend/CHANGELOG.md
+- frontend/README.md
+- README.md
+
+### Files changed
+- frontend/src/components/customer/customer-storefront-header.tsx
+- frontend/src/components/customer/customer-footer.tsx
+- frontend/src/components/layout/customer-app-shell.tsx
+
+### Verification
+- Shared customer shell renders the same header and footer across customer pages.
+- Frontend build succeeds.
+
+## 2026-04-26 - Public landing page storefront refresh
+
+### Type
+Frontend and documentation
+
+### Status
+Implemented
+
+### Summary
+The public `/` landing page was converted from a basic marketing page into a storefront-style catalog experience with a Zepto-style header, browser location label, search bar, category grid, live product sections, and storefront footer.
+
+### Updated docs
+- docs/frontend/01-frontend-overview.md
+- docs/frontend/04-routes-pages.md
+- docs/frontend/07-components-layouts.md
+- docs/frontend/CHANGELOG.md
+- frontend/README.md
+- README.md
+
+### Files changed
+- frontend/src/components/layout/public-navbar.tsx
+- frontend/src/app/(public)/page.tsx
+
+### Verification
+- Public landing page now renders the storefront-style header, search, categories, product sections, and footer.
