@@ -10,12 +10,13 @@ Smooth
 Fast
 Friendly
 Mobile-first
+Confident typography
 Rounded cards
-Soft shadows
+Soft enterprise shadows
 Large touch targets
 Clear status badges
 High contrast CTAs
-Simple dashboards
+Premium dashboards
 ```
 
 The design may be inspired by modern food/grocery apps, but it must not copy any brand exactly.
@@ -97,6 +98,30 @@ border-[var(--color-border)]
 
 ## Component style rules
 
+## Typography and spacing rules
+
+The current visual language should follow the public landing page and shared role shells:
+
+```txt
+Hero headings: large, bold, high-contrast, tight tracking
+Section headings: prominent but compact, usually around 1.75rem to 2rem
+Card headings: medium-large, bold, readable in 1-2 lines
+Body text: smaller and cleaner, usually muted gray with generous line height
+Meta labels: uppercase, tight tracking, compact size
+Avoid oversized footer or sidebar copy blocks
+Prefer compact spacing with strong grouping over tall empty layouts
+```
+
+Recommended rhythm:
+
+```txt
+Header height: compact but premium, around 72-80px on desktop
+Primary search inputs: around 48-54px tall
+Buttons: 40-52px tall depending on context
+Cards: rounded 20px to 30px, not sharp boxes
+Footer: visually light, compact, and link-dense rather than tall
+```
+
 ### Buttons
 
 Required button variants:
@@ -138,9 +163,9 @@ captain-task-card
 Cards should use:
 
 ```txt
-rounded-2xl
+rounded 20px to 30px
 soft shadow
-border
+subtle border
 clear spacing
 hover lift on desktop
 tap feedback on mobile
@@ -151,13 +176,14 @@ tap feedback on mobile
 Inputs should use:
 
 ```txt
-rounded-xl
-border
+rounded-xl or rounded-2xl
+soft border
 clear label
 error text
 helper text
 password visibility toggle
 mobile keyboard-friendly input types
+muted surface background for primary search bars
 ```
 
 ### Status badges
@@ -219,6 +245,7 @@ Filters
 Date range selectors
 Charts
 Action menus
+Enterprise spacing and calmer contrast than customer storefronts
 ```
 
 ## Branding rule
@@ -226,3 +253,14 @@ Action menus
 All colors, logo text, support phone, and company name must come from config files.
 
 Do not hardcode brand values in pages.
+
+## Current style direction
+
+The current implementation is closest to:
+
+```txt
+Public page: premium storefront with strong hero typography, wide search bar, compact nav, and light footer
+Customer pages: same storefront family, but simplified for signed-in browsing and cart flows
+Dashboard roles: enterprise shell with softer backgrounds, stronger hierarchy, compact topbars, and stable side navigation
+Mobile role flows: floating bottom navigation with rounded surfaces and stronger active states
+```

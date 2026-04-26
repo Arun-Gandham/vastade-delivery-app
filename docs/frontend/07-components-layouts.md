@@ -128,6 +128,8 @@ Customer storefront behavior:
 Header must expose search, cart, location context, and login/logout affordances
 Header and footer should be full-width shared storefront components reused across customer pages
 Footer should be compact, lighter, and expose navigation, support contact, and category shortcuts
+Header typography should feel premium and cleaner than the previous bulky version
+Search bars should be wide, soft-surfaced, and visually central in the header
 Customer home should remain usable even when persisted selected shop state becomes stale
 Location prompt should appear only when no saved delivery context exists
 ```
@@ -138,6 +140,8 @@ Public storefront behavior:
 Public header should expose branding, delivery context, search, login, and cart entry
 Public landing page should render categories and product sections from live frontend queries
 Public footer should expose links, support details, and category shortcuts
+Public hero should use stronger large-type hierarchy and cleaner promotional card grouping
+Category and product sections should follow the same heading scale and card rhythm as the public page
 ```
 
 Dashboard behavior:
@@ -147,4 +151,6 @@ Admin, shop-owner, and super-admin screens should inherit one shared enterprise 
 Sidebar should feel stable and premium rather than default utility navigation
 Topbar should expose role context, current user, and logout in a compact control surface
 Captain and customer mobile bottom navigation should use the same polished floating navigation language
+Typography should be tighter and more structured than storefront pages
+Surface styling should favor quieter backgrounds, softer borders, and stronger layout hierarchy
 ```

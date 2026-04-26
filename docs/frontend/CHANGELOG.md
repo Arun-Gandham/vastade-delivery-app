@@ -50,3 +50,8 @@
 - Unified the shared layout language across public, customer, captain, admin, shop-owner, and super-admin surfaces through common header, footer, sidebar, topbar, and bottom-nav components.
 - Refined the customer footer into a smaller, lighter storefront footer.
 - Refreshed dashboard shells into a more enterprise-style navigation and control surface.
+
+## 2026-04-27
+
+### Changed
+- Updated frontend docs so typography scale, spacing, search sizing, footer density, and dashboard chrome reflect the current public-page design language.

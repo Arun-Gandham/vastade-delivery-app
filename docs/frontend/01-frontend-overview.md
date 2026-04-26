@@ -88,6 +88,7 @@ Direct-to-S3 uploads with object-key storage and resolved image URLs
 Shared full-width customer shell reused across all customer pages
 Public landing page that surfaces live categories and products through a storefront-style header, search, and footer
 Shared enterprise dashboard chrome across admin, shop-owner, captain, and super-admin role surfaces
+Typography, spacing, and component sizing aligned to the newer public-page design language
 ```
 
 Do not build future features like wallet, AI recommendation, complex settlement, live map tracking, or auto captain assignment unless the docs are updated.

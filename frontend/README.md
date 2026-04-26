@@ -60,6 +60,14 @@ The project now uses a more unified shared UI layer across role surfaces:
 - enterprise-style dashboard sidebar and topbar for admin and shop-owner flows
 - polished floating mobile bottom navigation for customer and captain flows
 
+The current visual baseline follows the newer public-page design language:
+
+- stronger heading hierarchy
+- cleaner compact header proportions
+- wide soft search inputs
+- lighter compact footer treatment
+- calmer enterprise dashboard chrome
+
 ## Setup
 
 ```bash

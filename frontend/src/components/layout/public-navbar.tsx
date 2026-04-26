@@ -49,7 +49,7 @@ export const PublicNavbar = () => {
 
   return (
     <header className="sticky top-0 z-30 w-full border-b border-[#e8edf3] bg-white/92 backdrop-blur-xl">
-      <div className="mx-auto flex min-h-[78px] w-full max-w-[1680px] items-center gap-4 px-4 sm:px-6 lg:px-10">
+      <div className="mx-auto flex min-h-[78px] w-full max-w-[1680px] items-center gap-3 px-4 sm:px-6 lg:gap-4 lg:px-10">
         <Link href="/" className="flex shrink-0 items-center gap-3">
           <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[#1f9d55] text-base font-black text-white shadow-[0_14px_30px_rgba(31,157,85,0.28)]">
             Z
@@ -62,25 +62,25 @@ export const PublicNavbar = () => {
 
         <button
           type="button"
-          className="hidden min-w-[250px] shrink-0 rounded-2xl border border-[#edf1f5] bg-[#fafcfd] px-4 py-3 text-left lg:block"
+          className="hidden w-[210px] shrink-0 rounded-2xl border border-[#edf1f5] bg-[#fafcfd] px-3 py-2.5 text-left lg:block"
           onClick={() => void refreshLocation()}
         >
-          <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[#1f9d55]">Delivery in 11 minutes</p>
-          <div className="mt-1 flex items-center gap-2 text-sm font-medium text-[#111827]">
+          <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#1f9d55]">Delivery in 11 minutes</p>
+          <div className="mt-1 flex items-center gap-1.5 text-[13px] font-medium text-[#111827]">
             <span className="truncate">{locationLabel}</span>
-            <ChevronDown className="h-4 w-4 shrink-0 text-[#667085]" />
+            <ChevronDown className="h-3.5 w-3.5 shrink-0 text-[#667085]" />
           </div>
         </button>
 
-        <div className="min-w-0 flex-1">
+        <div className="min-w-0 flex-[1.35]">
           <form
             onSubmit={(event) => {
               event.preventDefault();
               router.push(`/customer/products?q=${encodeURIComponent(search)}`);
             }}
           >
-            <div className="flex h-[52px] items-center gap-3 rounded-[20px] border border-[#e6ebf2] bg-[#f7f9fc] px-4">
-              <Search className="h-4 w-4 text-[#667085]" />
+            <div className="flex h-[52px] items-center gap-3 rounded-[20px] border border-[#e6ebf2] bg-[#f7f9fc] px-5">
+              <Search className="h-4 w-4 shrink-0 text-[#667085]" />
               <input
                 className="w-full bg-transparent text-sm text-[#111827] outline-none placeholder:text-[#98a2b3]"
                 placeholder='Search "milk", "bread", "eggs"...'
