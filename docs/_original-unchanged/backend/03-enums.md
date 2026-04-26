@@ -1,0 +1,50 @@
+# Enums
+
+# 8. Enums
+
+## OrderStatus
+
+```txt
+PLACED
+CONFIRMED
+PACKING
+READY_FOR_PICKUP
+ASSIGNED_TO_CAPTAIN
+OUT_FOR_DELIVERY
+DELIVERED
+CANCELLED
+FAILED
+REFUNDED
+```
+
+## PaymentMode
+
+```txt
+COD
+UPI_MANUAL
+RAZORPAY
+```
+
+## PaymentStatus
+
+```txt
+PENDING
+PAID
+FAILED
+REFUNDED
+COD_PENDING
+COD_COLLECTED
+```
+
+## DeliveryAssignmentStatus
+
+```txt
+ASSIGNED
+ACCEPTED
+REJECTED
+PICKED_UP
+DELIVERED
+CANCELLED
+```
+
+---

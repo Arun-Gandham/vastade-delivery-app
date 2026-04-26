@@ -1,0 +1,1876 @@
+# Backend API Specification — Small-Scale Zepto / Instamart Clone
+
+## Purpose
+
+This document is a **backend-only API development specification** for building a quick-commerce grocery delivery platform similar to Zepto / Instamart, but targeted for a **small village or local-area pilot**.
+
+The backend should support direct integration with:
+
+* Customer mobile app
+* Customer web app
+* Captain / delivery partner mobile app
+* Admin web panel
+* Shop owner / store manager web or mobile panel
+
+This document is written so that a developer or Codex-style coding agent can generate the full backend end-to-end.
+
+---
+
+# 1. Recommended Backend Stack
+
+```txt
+Runtime: Node.js
+Language: TypeScript
+Framework: Express.js or NestJS
+Database: MySQL
+ORM: Prisma
+Cache: Redis
+Queue: BullMQ
+Authentication: JWT + Refresh Token
+Validation: Zod / class-validator
+File Storage: S3 / Cloudinary / Local for MVP
+Logging: Pino / Winston
+API Docs: Swagger / OpenAPI
+Deployment: Docker + Nginx
+```
+
+Recommended for rapid production-level development:
+
+```txt
+Node.js + TypeScript + Express + Prisma + MySQL + Redis
+```
+
+---
+
+# 2. User Roles
+
+```txt
+SUPER_ADMIN
+ADMIN
+SHOP_OWNER
+STORE_MANAGER
+CUSTOMER
+CAPTAIN
+```
+
+| Role          | Description                                |
+| ------------- | ------------------------------------------ |
+| SUPER_ADMIN   | Platform owner, full access                |
+| ADMIN         | Internal operations team                   |
+| SHOP_OWNER    | Owns one or multiple shops/stores          |
+| STORE_MANAGER | Manages orders and inventory for one store |
+| CUSTOMER      | Places grocery orders                      |
+| CAPTAIN       | Delivery partner                           |
+
+---
+
+# 3. Main Modules
+
+```txt
+Auth Module
+User Module
+Customer Module
+Address Module
+Shop / Store Module
+Category Module
+Product Module
+Inventory Module
+Cart Module
+Order Module
+Payment Module
+Captain / Delivery Module
+Coupon Module
+Notification Module
+Upload Module
+Admin Dashboard Module
+Shop Owner Dashboard Module
+Audit Log Module
+```
+
+---
+
+# 4. API Base URL
+
+```txt
+Local: http://localhost:5000/api/v1
+Production: https://api.yourdomain.com/api/v1
+```
+
+---
+
+# 5. Standard API Response Format
+
+## Success Response
+
+```json
+{
+  "success": true,
+  "message": "Success message",
+  "data": {},
+  "meta": {}
+}
+```
+
+## Error Response
+
+```json
+{
+  "success": false,
+  "message": "Error message",
+  "errorCode": "ERROR_CODE",
+  "errors": []
+}
+```
+
+---
+
+# 6. Authentication Rules
+
+```txt
+Access Token: 15 minutes
+Refresh Token: 7 to 30 days
+Auth Header: Authorization: Bearer <access_token>
+```
+
+For fast MVP:
+
+```txt
+Mobile + Password login
+```
+
+Later:
+
+```txt
+Mobile OTP
+WhatsApp OTP
+Google login
+```
+
+Password rules:
+
+```txt
+Minimum 8 characters
+At least 1 uppercase letter
+At least 1 lowercase letter
+At least 1 number
+At least 1 special character
+```
+
+---
+
+# 7. Database Entities
+
+## users
+
+```txt
+id UUID PK
+name VARCHAR(150)
+mobile VARCHAR(20) UNIQUE
+email VARCHAR(150) UNIQUE NULL
+passwordHash TEXT NULL
+role ENUM
+profileImage TEXT NULL
+isMobileVerified BOOLEAN DEFAULT false
+isEmailVerified BOOLEAN DEFAULT false
+isActive BOOLEAN DEFAULT true
+lastLoginAt TIMESTAMP NULL
+createdAt TIMESTAMP
+updatedAt TIMESTAMP
+```
+
+## user_sessions
+
+```txt
+id UUID PK
+userId UUID FK users.id
+refreshToken TEXT
+deviceId TEXT NULL
+deviceType VARCHAR(50) NULL
+fcmToken TEXT NULL
+ipAddress TEXT NULL
+userAgent TEXT NULL
+expiresAt TIMESTAMP
+revokedAt TIMESTAMP NULL
+createdAt TIMESTAMP
+```
+
+## customer_addresses
+
+```txt
+id UUID PK
+customerId UUID FK users.id
+fullName VARCHAR(150)
+mobile VARCHAR(20)
+houseNo TEXT
+street TEXT
+landmark TEXT
+village VARCHAR(150)
+mandal VARCHAR(150) NULL
+district VARCHAR(150) NULL
+state VARCHAR(150) NULL
+pincode VARCHAR(10)
+latitude DECIMAL(10,7) NULL
+longitude DECIMAL(10,7) NULL
+addressType ENUM HOME, WORK, OTHER
+isDefault BOOLEAN DEFAULT false
+createdAt TIMESTAMP
+updatedAt TIMESTAMP
+```
+
+## shops
+
+```txt
+id UUID PK
+ownerId UUID FK users.id
+name VARCHAR(200)
+mobile VARCHAR(20)
+email VARCHAR(150) NULL
+licenseNumber VARCHAR(100) NULL
+gstNumber VARCHAR(100) NULL
+address TEXT
+village VARCHAR(150)
+pincode VARCHAR(10)
+latitude DECIMAL(10,7) NULL
+longitude DECIMAL(10,7) NULL
+openingTime TIME NULL
+closingTime TIME NULL
+isOpen BOOLEAN DEFAULT true
+isActive BOOLEAN DEFAULT true
+createdAt TIMESTAMP
+updatedAt TIMESTAMP
+```
+
+## shop_staff
+
+```txt
+id UUID PK
+shopId UUID FK shops.id
+userId UUID FK users.id
+role ENUM SHOP_OWNER, STORE_MANAGER
+isActive BOOLEAN DEFAULT true
+createdAt TIMESTAMP
+updatedAt TIMESTAMP
+```
+
+## categories
+
+```txt
+id UUID PK
+name VARCHAR(150)
+slug VARCHAR(150) UNIQUE
+imageUrl TEXT NULL
+parentId UUID NULL FK categories.id
+sortOrder INT DEFAULT 0
+isActive BOOLEAN DEFAULT true
+createdAt TIMESTAMP
+updatedAt TIMESTAMP
+```
+
+## products
+
+```txt
+id UUID PK
+categoryId UUID FK categories.id
+name VARCHAR(200)
+slug VARCHAR(200) UNIQUE
+description TEXT NULL
+brand VARCHAR(150) NULL
+unit VARCHAR(50)
+unitValue DECIMAL(10,2) NULL
+mrp DECIMAL(10,2)
+sellingPrice DECIMAL(10,2)
+barcode VARCHAR(100) NULL
+imageUrl TEXT NULL
+isActive BOOLEAN DEFAULT true
+createdAt TIMESTAMP
+updatedAt TIMESTAMP
+```
+
+## product_images
+
+```txt
+id UUID PK
+productId UUID FK products.id
+imageUrl TEXT
+sortOrder INT DEFAULT 0
+createdAt TIMESTAMP
+```
+
+## shop_inventory
+
+```txt
+id UUID PK
+shopId UUID FK shops.id
+productId UUID FK products.id
+availableStock INT DEFAULT 0
+reservedStock INT DEFAULT 0
+soldStock INT DEFAULT 0
+damagedStock INT DEFAULT 0
+lowStockAlert INT DEFAULT 5
+isAvailable BOOLEAN DEFAULT true
+createdAt TIMESTAMP
+updatedAt TIMESTAMP
+UNIQUE(shopId, productId)
+```
+
+## carts
+
+```txt
+id UUID PK
+customerId UUID FK users.id
+shopId UUID FK shops.id
+createdAt TIMESTAMP
+updatedAt TIMESTAMP
+```
+
+## cart_items
+
+```txt
+id UUID PK
+cartId UUID FK carts.id
+productId UUID FK products.id
+quantity INT
+unitPrice DECIMAL(10,2)
+totalPrice DECIMAL(10,2)
+createdAt TIMESTAMP
+updatedAt TIMESTAMP
+UNIQUE(cartId, productId)
+```
+
+## orders
+
+```txt
+id UUID PK
+orderNumber VARCHAR(50) UNIQUE
+customerId UUID FK users.id
+shopId UUID FK shops.id
+addressId UUID FK customer_addresses.id
+captainId UUID FK users.id NULL
+status ENUM
+paymentMode ENUM
+paymentStatus ENUM
+subtotal DECIMAL(10,2)
+deliveryFee DECIMAL(10,2)
+platformFee DECIMAL(10,2) DEFAULT 0
+discount DECIMAL(10,2) DEFAULT 0
+totalAmount DECIMAL(10,2)
+codAmount DECIMAL(10,2) DEFAULT 0
+customerNotes TEXT NULL
+cancelReason TEXT NULL
+placedAt TIMESTAMP
+confirmedAt TIMESTAMP NULL
+packedAt TIMESTAMP NULL
+pickedUpAt TIMESTAMP NULL
+deliveredAt TIMESTAMP NULL
+cancelledAt TIMESTAMP NULL
+createdAt TIMESTAMP
+updatedAt TIMESTAMP
+```
+
+## order_items
+
+```txt
+id UUID PK
+orderId UUID FK orders.id
+productId UUID FK products.id
+productName VARCHAR(200)
+productImage TEXT NULL
+quantity INT
+unitPrice DECIMAL(10,2)
+totalPrice DECIMAL(10,2)
+createdAt TIMESTAMP
+```
+
+## order_status_history
+
+```txt
+id UUID PK
+orderId UUID FK orders.id
+oldStatus VARCHAR(50) NULL
+newStatus VARCHAR(50)
+changedBy UUID FK users.id NULL
+remarks TEXT NULL
+createdAt TIMESTAMP
+```
+
+## payments
+
+```txt
+id UUID PK
+orderId UUID FK orders.id
+paymentMode ENUM COD, UPI_MANUAL, RAZORPAY
+paymentStatus ENUM PENDING, PAID, FAILED, REFUNDED, COD_PENDING, COD_COLLECTED
+provider VARCHAR(100) NULL
+providerOrderId TEXT NULL
+providerPaymentId TEXT NULL
+providerSignature TEXT NULL
+amount DECIMAL(10,2)
+paidAt TIMESTAMP NULL
+createdAt TIMESTAMP
+updatedAt TIMESTAMP
+```
+
+## captains
+
+```txt
+id UUID PK
+userId UUID FK users.id
+vehicleType ENUM BIKE, CYCLE, AUTO, WALKING
+vehicleNumber VARCHAR(50) NULL
+licenseNumber VARCHAR(100) NULL
+isOnline BOOLEAN DEFAULT false
+isAvailable BOOLEAN DEFAULT true
+currentLatitude DECIMAL(10,7) NULL
+currentLongitude DECIMAL(10,7) NULL
+cashInHand DECIMAL(10,2) DEFAULT 0
+createdAt TIMESTAMP
+updatedAt TIMESTAMP
+```
+
+## delivery_assignments
+
+```txt
+id UUID PK
+orderId UUID FK orders.id
+captainId UUID FK users.id
+assignedBy UUID FK users.id NULL
+status ENUM ASSIGNED, ACCEPTED, REJECTED, PICKED_UP, DELIVERED, CANCELLED
+assignedAt TIMESTAMP
+acceptedAt TIMESTAMP NULL
+pickedUpAt TIMESTAMP NULL
+deliveredAt TIMESTAMP NULL
+createdAt TIMESTAMP
+updatedAt TIMESTAMP
+```
+
+## stock_movements
+
+```txt
+id UUID PK
+shopId UUID FK shops.id
+productId UUID FK products.id
+movementType ENUM
+quantity INT
+beforeStock INT
+afterStock INT
+referenceType VARCHAR(50) NULL
+referenceId UUID NULL
+remarks TEXT NULL
+createdBy UUID FK users.id NULL
+createdAt TIMESTAMP
+```
+
+Movement types:
+
+```txt
+STOCK_ADDED
+STOCK_RESERVED
+STOCK_RELEASED
+STOCK_SOLD
+STOCK_DAMAGED
+STOCK_ADJUSTED
+```
+
+## coupons
+
+```txt
+id UUID PK
+code VARCHAR(50) UNIQUE
+description TEXT NULL
+discountType ENUM PERCENTAGE, FLAT
+value DECIMAL(10,2)
+minOrderAmount DECIMAL(10,2) DEFAULT 0
+maxDiscount DECIMAL(10,2) NULL
+usageLimit INT NULL
+usedCount INT DEFAULT 0
+validFrom TIMESTAMP
+validTo TIMESTAMP
+isActive BOOLEAN DEFAULT true
+createdAt TIMESTAMP
+updatedAt TIMESTAMP
+```
+
+## notifications
+
+```txt
+id UUID PK
+userId UUID FK users.id
+channel ENUM PUSH, SMS, WHATSAPP, EMAIL, IN_APP
+title VARCHAR(200)
+message TEXT
+payload JSONB NULL
+isRead BOOLEAN DEFAULT false
+sentAt TIMESTAMP NULL
+createdAt TIMESTAMP
+```
+
+## audit_logs
+
+```txt
+id UUID PK
+userId UUID FK users.id NULL
+action VARCHAR(150)
+entityName VARCHAR(150)
+entityId UUID NULL
+oldValue JSONB NULL
+newValue JSONB NULL
+ipAddress TEXT NULL
+userAgent TEXT NULL
+createdAt TIMESTAMP
+```
+
+---
+
+# 8. Enums
+
+## OrderStatus
+
+```txt
+PLACED
+CONFIRMED
+PACKING
+READY_FOR_PICKUP
+ASSIGNED_TO_CAPTAIN
+OUT_FOR_DELIVERY
+DELIVERED
+CANCELLED
+FAILED
+REFUNDED
+```
+
+## PaymentMode
+
+```txt
+COD
+UPI_MANUAL
+RAZORPAY
+```
+
+## PaymentStatus
+
+```txt
+PENDING
+PAID
+FAILED
+REFUNDED
+COD_PENDING
+COD_COLLECTED
+```
+
+## DeliveryAssignmentStatus
+
+```txt
+ASSIGNED
+ACCEPTED
+REJECTED
+PICKED_UP
+DELIVERED
+CANCELLED
+```
+
+---
+
+# 9. API Endpoints
+
+# 9.1 Auth APIs
+
+## Register Customer
+
+```http
+POST /auth/customer/register
+```
+
+Request:
+
+```json
+{
+  "name": "Arun",
+  "mobile": "9876543210",
+  "email": "arun@example.com",
+  "password": "Password@123"
+}
+```
+
+---
+
+## Login
+
+```http
+POST /auth/login
+```
+
+Request:
+
+```json
+{
+  "mobile": "9876543210",
+  "password": "Password@123",
+  "deviceType": "WEB",
+  "fcmToken": "optional"
+}
+```
+
+Response:
+
+```json
+{
+  "success": true,
+  "message": "Login successful",
+  "data": {
+    "accessToken": "jwt_token",
+    "refreshToken": "refresh_token",
+    "user": {
+      "id": "uuid",
+      "name": "Arun",
+      "mobile": "9876543210",
+      "role": "CUSTOMER"
+    }
+  }
+}
+```
+
+---
+
+## Refresh Token
+
+```http
+POST /auth/refresh-token
+```
+
+Request:
+
+```json
+{
+  "refreshToken": "refresh_token"
+}
+```
+
+---
+
+## Logout
+
+```http
+POST /auth/logout
+```
+
+Auth required: Yes
+
+---
+
+## Change Password
+
+```http
+POST /auth/change-password
+```
+
+Auth required: Yes
+
+Request:
+
+```json
+{
+  "oldPassword": "Old@123",
+  "newPassword": "New@123"
+}
+```
+
+---
+
+# 9.2 Profile APIs
+
+```http
+GET /users/me
+PATCH /users/me
+```
+
+Update request:
+
+```json
+{
+  "name": "Arun Sai",
+  "email": "arun@example.com",
+  "profileImage": "image_url"
+}
+```
+
+---
+
+# 9.3 Customer Address APIs
+
+```http
+POST /customer/addresses
+GET /customer/addresses
+PATCH /customer/addresses/:addressId
+DELETE /customer/addresses/:addressId
+PATCH /customer/addresses/:addressId/default
+```
+
+Create request:
+
+```json
+{
+  "fullName": "Arun",
+  "mobile": "9876543210",
+  "houseNo": "1-23",
+  "street": "Main Road",
+  "landmark": "Near Temple",
+  "village": "My Village",
+  "mandal": "Mandal Name",
+  "district": "District Name",
+  "state": "Andhra Pradesh",
+  "pincode": "533001",
+  "latitude": 16.1234567,
+  "longitude": 82.1234567,
+  "addressType": "HOME",
+  "isDefault": true
+}
+```
+
+---
+
+# 9.4 Category APIs
+
+## Public
+
+```http
+GET /categories
+```
+
+## Admin
+
+```http
+POST /admin/categories
+PATCH /admin/categories/:categoryId
+DELETE /admin/categories/:categoryId
+```
+
+Create request:
+
+```json
+{
+  "name": "Vegetables",
+  "imageUrl": "url",
+  "parentId": null,
+  "sortOrder": 1
+}
+```
+
+---
+
+# 9.5 Product APIs
+
+## Public Product List
+
+```http
+GET /products?shopId=uuid&categoryId=uuid&search=milk&page=1&limit=20
+```
+
+Response item:
+
+```json
+{
+  "id": "uuid",
+  "name": "Milk",
+  "categoryId": "uuid",
+  "brand": "Brand Name",
+  "unit": "500 ml",
+  "mrp": 35,
+  "sellingPrice": 32,
+  "imageUrl": "url",
+  "availableStock": 10,
+  "isAvailable": true
+}
+```
+
+## Product Details
+
+```http
+GET /products/:productId?shopId=uuid
+```
+
+## Admin Product Management
+
+```http
+POST /admin/products
+PATCH /admin/products/:productId
+DELETE /admin/products/:productId
+```
+
+Create request:
+
+```json
+{
+  "categoryId": "uuid",
+  "name": "Milk",
+  "description": "Fresh milk",
+  "brand": "Brand Name",
+  "unit": "ml",
+  "unitValue": 500,
+  "mrp": 35,
+  "sellingPrice": 32,
+  "barcode": "1234567890",
+  "imageUrl": "url"
+}
+```
+
+---
+
+# 9.6 Shop APIs
+
+## Public
+
+```http
+GET /shops/nearby?village=VillageName&pincode=533001
+GET /shops/:shopId
+```
+
+## Admin
+
+```http
+POST /admin/shops
+PATCH /admin/shops/:shopId
+```
+
+Create request:
+
+```json
+{
+  "ownerId": "uuid",
+  "name": "Sai Grocery Store",
+  "mobile": "9876543210",
+  "email": "shop@example.com",
+  "address": "Main Road",
+  "village": "Village Name",
+  "pincode": "533001",
+  "latitude": 16.1234567,
+  "longitude": 82.1234567,
+  "openingTime": "07:00",
+  "closingTime": "22:00"
+}
+```
+
+## Shop Owner Open Status
+
+```http
+PATCH /shop-owner/shops/:shopId/open-status
+```
+
+Request:
+
+```json
+{
+  "isOpen": true
+}
+```
+
+---
+
+# 9.7 Inventory APIs
+
+```http
+PUT /shop-owner/shops/:shopId/inventory/:productId
+POST /shop-owner/shops/:shopId/inventory/bulk
+GET /shop-owner/shops/:shopId/inventory
+POST /shop-owner/shops/:shopId/inventory/:productId/adjust
+```
+
+Update request:
+
+```json
+{
+  "availableStock": 100,
+  "lowStockAlert": 10,
+  "isAvailable": true
+}
+```
+
+Adjust request:
+
+```json
+{
+  "quantity": 10,
+  "adjustmentType": "ADD",
+  "remarks": "New stock received"
+}
+```
+
+Allowed adjustment types:
+
+```txt
+ADD
+REMOVE
+SET
+DAMAGED
+```
+
+---
+
+# 9.8 Cart APIs
+
+```http
+GET /cart?shopId=uuid
+POST /cart/items
+PATCH /cart/items/:cartItemId
+DELETE /cart/items/:cartItemId
+DELETE /cart?shopId=uuid
+```
+
+Add item request:
+
+```json
+{
+  "shopId": "uuid",
+  "productId": "uuid",
+  "quantity": 2
+}
+```
+
+Rules:
+
+```txt
+Check product is active
+Check shop inventory exists
+Check availableStock >= requested quantity
+If item already exists, increase quantity
+Cart should belong to one shop only
+```
+
+---
+
+# 9.9 Customer Order APIs
+
+## Place Order
+
+```http
+POST /orders
+```
+
+Request:
+
+```json
+{
+  "shopId": "uuid",
+  "addressId": "uuid",
+  "paymentMode": "COD",
+  "couponCode": null,
+  "customerNotes": "Please deliver fast"
+}
+```
+
+Backend must:
+
+```txt
+Validate customer
+Validate address belongs to customer
+Validate shop is active and open
+Validate cart is not empty
+Validate product stock
+Calculate subtotal
+Calculate delivery fee
+Apply coupon if any
+Create order
+Create order_items
+Reserve stock atomically
+Clear cart
+Create payment record
+Create order status history
+Send notification to shop owner/admin
+```
+
+Stock reservation:
+
+```txt
+availableStock = availableStock - orderedQty
+reservedStock = reservedStock + orderedQty
+```
+
+## Customer Order List
+
+```http
+GET /orders/my?status=PLACED&page=1&limit=20
+```
+
+## Customer Order Details
+
+```http
+GET /orders/:orderId
+```
+
+## Cancel Customer Order
+
+```http
+POST /orders/:orderId/cancel
+```
+
+Request:
+
+```json
+{
+  "reason": "Ordered by mistake"
+}
+```
+
+Allowed cancellation statuses:
+
+```txt
+PLACED
+CONFIRMED
+PACKING
+```
+
+---
+
+# 9.10 Shop Owner Order APIs
+
+```http
+GET /shop-owner/shops/:shopId/orders
+GET /shop-owner/shops/:shopId/orders/:orderId
+POST /shop-owner/orders/:orderId/confirm
+POST /shop-owner/orders/:orderId/mark-packing
+POST /shop-owner/orders/:orderId/ready-for-pickup
+POST /shop-owner/orders/:orderId/cancel
+POST /shop-owner/orders/:orderId/assign-captain
+```
+
+Cancel request:
+
+```json
+{
+  "reason": "Item unavailable"
+}
+```
+
+---
+
+# 9.11 Admin Order APIs
+
+```http
+GET /admin/orders
+GET /admin/orders/:orderId
+PATCH /admin/orders/:orderId/status
+POST /admin/orders/:orderId/assign-captain
+```
+
+Status update request:
+
+```json
+{
+  "status": "CONFIRMED",
+  "remarks": "Updated by admin"
+}
+```
+
+---
+
+# 9.12 Captain APIs
+
+## Register Captain
+
+```http
+POST /captains/register
+```
+
+Request:
+
+```json
+{
+  "name": "Ravi",
+  "mobile": "9876543210",
+  "password": "Password@123",
+  "vehicleType": "BIKE",
+  "vehicleNumber": "AP00AB1234",
+  "licenseNumber": "DL123456"
+}
+```
+
+## Captain Status and Location
+
+```http
+PATCH /captains/me/online-status
+PATCH /captains/me/location
+```
+
+Online request:
+
+```json
+{
+  "isOnline": true,
+  "latitude": 16.1234567,
+  "longitude": 82.1234567
+}
+```
+
+## Captain Orders
+
+```http
+GET /captains/me/orders
+POST /captains/orders/:orderId/accept
+POST /captains/orders/:orderId/reject
+POST /captains/orders/:orderId/picked-up
+POST /captains/orders/:orderId/delivered
+```
+
+Delivered request:
+
+```json
+{
+  "paymentCollected": true,
+  "collectedAmount": 350,
+  "deliveryProofImage": "optional_url"
+}
+```
+
+On delivery:
+
+```txt
+order status = DELIVERED
+reservedStock = reservedStock - qty
+soldStock = soldStock + qty
+paymentStatus = COD_COLLECTED if COD
+captain cashInHand += collected COD amount
+```
+
+---
+
+# 9.13 Delivery Assignment APIs
+
+```http
+GET /admin/captains/available
+POST /admin/orders/:orderId/assign-captain
+POST /shop-owner/orders/:orderId/assign-captain
+```
+
+Assign request:
+
+```json
+{
+  "captainId": "uuid"
+}
+```
+
+Allowed order status:
+
+```txt
+READY_FOR_PICKUP
+```
+
+New order status:
+
+```txt
+ASSIGNED_TO_CAPTAIN
+```
+
+---
+
+# 9.14 Payment APIs
+
+```http
+POST /payments/razorpay/create-order
+POST /payments/razorpay/verify
+POST /payments/manual-upi/mark-paid
+```
+
+Manual UPI request:
+
+```json
+{
+  "orderId": "uuid",
+  "transactionReference": "UPI123456"
+}
+```
+
+For MVP, COD + manual UPI is enough.
+
+---
+
+# 9.15 Coupon APIs
+
+```http
+POST /coupons/validate
+POST /admin/coupons
+PATCH /admin/coupons/:couponId
+DELETE /admin/coupons/:couponId
+```
+
+Validate request:
+
+```json
+{
+  "shopId": "uuid",
+  "couponCode": "FIRST50",
+  "cartAmount": 500
+}
+```
+
+---
+
+# 9.16 Upload APIs
+
+```http
+POST /uploads/image
+```
+
+Form-data:
+
+```txt
+file: image
+folder: products | categories | shops | delivery-proof
+```
+
+Validation:
+
+```txt
+Allowed types: jpg, jpeg, png, webp
+Max size: 5 MB
+```
+
+---
+
+# 9.17 Notification APIs
+
+```http
+GET /notifications
+PATCH /notifications/:notificationId/read
+POST /notifications/register-device
+```
+
+Register device request:
+
+```json
+{
+  "fcmToken": "token",
+  "deviceType": "ANDROID"
+}
+```
+
+---
+
+# 9.18 Admin Dashboard APIs
+
+```http
+GET /admin/dashboard/summary
+GET /admin/reports/sales
+GET /admin/reports/product-sales
+GET /admin/reports/low-stock
+```
+
+Dashboard response:
+
+```json
+{
+  "success": true,
+  "data": {
+    "totalOrders": 1000,
+    "todayOrders": 50,
+    "todayRevenue": 25000,
+    "activeCustomers": 500,
+    "activeShops": 5,
+    "activeCaptains": 10,
+    "pendingOrders": 8,
+    "cancelledOrders": 3
+  }
+}
+```
+
+---
+
+# 9.19 Shop Owner Dashboard APIs
+
+```http
+GET /shop-owner/shops/:shopId/dashboard/summary
+GET /shop-owner/shops/:shopId/reports/sales
+GET /shop-owner/shops/:shopId/reports/low-stock
+```
+
+Summary response:
+
+```json
+{
+  "success": true,
+  "data": {
+    "todayOrders": 20,
+    "todayRevenue": 10000,
+    "pendingOrders": 5,
+    "deliveredOrders": 15,
+    "cancelledOrders": 1,
+    "lowStockProducts": 12
+  }
+}
+```
+
+---
+
+# 10. Business Rules
+
+## Cart Rules
+
+```txt
+One active cart per customer per shop
+Cart cannot contain products from multiple shops
+Product price must be copied into cart_items when added
+Cart must validate latest price and stock during checkout
+```
+
+## Order Placement Rules
+
+```txt
+Order must be created inside DB transaction
+Inventory must be reserved inside same transaction
+Cart must be cleared after successful order
+Order number must be unique
+Order status history must be created
+Notification event must be queued after transaction success
+```
+
+## Inventory Rules
+
+During order placement:
+
+```txt
+availableStock -= quantity
+reservedStock += quantity
+```
+
+During cancellation:
+
+```txt
+reservedStock -= quantity
+availableStock += quantity
+```
+
+During delivery:
+
+```txt
+reservedStock -= quantity
+soldStock += quantity
+```
+
+Never allow stock values below zero.
+
+## Order Status Flow
+
+```txt
+PLACED
+  -> CONFIRMED
+  -> PACKING
+  -> READY_FOR_PICKUP
+  -> ASSIGNED_TO_CAPTAIN
+  -> OUT_FOR_DELIVERY
+  -> DELIVERED
+```
+
+Cancellation allowed from:
+
+```txt
+PLACED
+CONFIRMED
+PACKING
+READY_FOR_PICKUP
+```
+
+Cancellation not allowed after:
+
+```txt
+OUT_FOR_DELIVERY
+DELIVERED
+```
+
+## COD Rules
+
+```txt
+If paymentMode = COD, paymentStatus = COD_PENDING
+When captain delivers, paymentStatus = COD_COLLECTED
+Captain cashInHand increases by COD amount
+```
+
+---
+
+# 11. Middleware Requirements
+
+```txt
+requestLogger
+errorHandler
+authMiddleware
+roleMiddleware
+validateRequestMiddleware
+rateLimitMiddleware
+corsMiddleware
+helmetSecurityMiddleware
+```
+
+---
+
+# 12. Error Codes
+
+```txt
+AUTH_INVALID_CREDENTIALS
+AUTH_TOKEN_EXPIRED
+AUTH_UNAUTHORIZED
+AUTH_FORBIDDEN
+USER_NOT_FOUND
+SHOP_NOT_FOUND
+PRODUCT_NOT_FOUND
+CATEGORY_NOT_FOUND
+CART_EMPTY
+CART_ITEM_NOT_FOUND
+INSUFFICIENT_STOCK
+ORDER_NOT_FOUND
+INVALID_ORDER_STATUS
+PAYMENT_FAILED
+CAPTAIN_NOT_FOUND
+CAPTAIN_NOT_AVAILABLE
+COUPON_INVALID
+VALIDATION_ERROR
+INTERNAL_SERVER_ERROR
+```
+
+---
+
+# 13. Background Jobs
+
+Use BullMQ + Redis.
+
+```txt
+sendOrderNotificationJob
+sendDeliveryAssignmentNotificationJob
+sendOrderDeliveredNotificationJob
+cancelUnpaidOrderJob
+lowStockAlertJob
+```
+
+---
+
+# 14. Real-Time Events
+
+For MVP, polling is acceptable. Later use Socket.IO.
+
+```txt
+order.created
+order.status.updated
+order.assigned
+captain.location.updated
+payment.updated
+inventory.low_stock
+```
+
+---
+
+# 15. Security Requirements
+
+```txt
+Use HTTPS in production
+Hash passwords using bcrypt
+Never store plain passwords
+Use JWT expiry
+Use refresh token rotation
+Use Helmet
+Enable CORS only for allowed domains
+Rate limit auth APIs
+Validate all request bodies
+Sanitize file uploads
+Use parameterized DB queries through Prisma
+Do not expose stack traces in production
+Store secrets in environment variables
+```
+
+---
+
+# 16. Environment Variables
+
+```env
+NODE_ENV=development
+PORT=5000
+DATABASE_URL=mysql://user:password@localhost:5432/quick_commerce
+REDIS_URL=redis://localhost:6379
+JWT_ACCESS_SECRET=your_access_secret
+JWT_REFRESH_SECRET=your_refresh_secret
+JWT_ACCESS_EXPIRES_IN=15m
+JWT_REFRESH_EXPIRES_IN=30d
+BCRYPT_SALT_ROUNDS=12
+CORS_ORIGIN=http://localhost:3000
+RAZORPAY_KEY_ID=
+RAZORPAY_KEY_SECRET=
+S3_ACCESS_KEY=
+S3_SECRET_KEY=
+S3_BUCKET=
+S3_REGION=
+WHATSAPP_API_TOKEN=
+SMS_API_KEY=
+```
+
+---
+
+# 17. API Access Matrix
+
+| Module           | Customer |       Captain |         Shop Owner | Admin | Super Admin |
+| ---------------- | -------: | ------------: | -----------------: | ----: | ----------: |
+| Auth             |      Yes |           Yes |                Yes |   Yes |         Yes |
+| Products Public  |      Yes |           Yes |                Yes |   Yes |         Yes |
+| Cart             |      Yes |            No |                 No |    No |          No |
+| Place Order      |      Yes |            No |                 No |    No |          No |
+| View Own Orders  |      Yes | Assigned only |   Shop orders only |   All |         All |
+| Manage Products  |       No |            No | Limited if allowed |   Yes |         Yes |
+| Manage Inventory |       No |            No |           Own shop |   Yes |         Yes |
+| Assign Captain   |       No |            No |    Own shop orders |   Yes |         Yes |
+| Deliver Order    |       No | Assigned only |                 No |    No |          No |
+| Reports          |       No |            No |           Own shop |   All |         All |
+
+---
+
+# 18. Minimum MVP Scope
+
+For first village pilot, build only this first:
+
+```txt
+Auth
+Customer profile
+Address
+Shop
+Category
+Product
+Inventory
+Cart
+Order
+Shop order management
+Manual captain assignment
+Captain delivery flow
+COD payment
+Basic admin dashboard
+```
+
+Do not build initially:
+
+```txt
+Wallet
+Subscription
+Advanced offers
+AI recommendation
+Multiple payment gateways
+Live map tracking
+Auto captain assignment
+Complex settlement
+```
+
+---
+
+# 19. Development Order
+
+```txt
+1. Project setup
+2. Prisma schema
+3. Auth module
+4. Role middleware
+5. User/profile module
+6. Shop module
+7. Category module
+8. Product module
+9. Inventory module
+10. Cart module
+11. Order placement with transaction
+12. Shop order status APIs
+13. Captain module
+14. Delivery assignment APIs
+15. Payment module basic COD
+16. Notification queue
+17. Dashboard APIs
+18. Swagger docs
+19. Tests
+20. Docker deployment
+```
+
+---
+
+# 20. Required Backend Implementation Standards
+
+Each module should have:
+
+```txt
+module.routes.ts
+module.controller.ts
+module.service.ts
+module.repository.ts
+module.validation.ts
+module.types.ts
+```
+
+Example:
+
+```txt
+orders/
+  order.routes.ts
+  order.controller.ts
+  order.service.ts
+  order.repository.ts
+  order.validation.ts
+  order.types.ts
+```
+
+Controller responsibility:
+
+```txt
+Read request
+Call validation middleware
+Call service
+Return response
+No business logic
+```
+
+Service responsibility:
+
+```txt
+Business logic
+Transactions
+Status rules
+Calling repositories
+Calling queues
+```
+
+Repository responsibility:
+
+```txt
+Database access only
+No business rules
+```
+
+---
+
+# 21. Critical Transaction APIs
+
+These APIs must use DB transactions:
+
+```txt
+POST /orders
+POST /orders/:orderId/cancel
+POST /shop-owner/orders/:orderId/cancel
+POST /captains/orders/:orderId/delivered
+POST /shop-owner/shops/:shopId/inventory/:productId/adjust
+POST /admin/orders/:orderId/assign-captain
+```
+
+---
+
+# 22. Order Number Format
+
+```txt
+QC-YYYYMMDD-000001
+```
+
+Example:
+
+```txt
+QC-20260425-000001
+```
+
+---
+
+# 23. Pagination Standard
+
+Request:
+
+```txt
+?page=1&limit=20
+```
+
+Response meta:
+
+```json
+{
+  "page": 1,
+  "limit": 20,
+  "total": 100,
+  "totalPages": 5
+}
+```
+
+---
+
+# 24. Sorting Standard
+
+```txt
+?sortBy=createdAt&sortOrder=desc
+```
+
+Allowed sortOrder:
+
+```txt
+asc
+desc
+```
+
+---
+
+# 25. Search Standard
+
+```txt
+?search=milk
+```
+
+Search in:
+
+```txt
+Product name
+Brand
+SKU
+Order number
+Customer mobile
+Shop name
+```
+
+---
+
+# 26. Soft Delete Standard
+
+Do not hard delete important data.
+
+Use:
+
+```txt
+isActive = false
+```
+
+For:
+
+```txt
+users
+shops
+categories
+products
+captains
+```
+
+---
+
+# 27. Testing Requirements
+
+Unit tests:
+
+```txt
+Auth service
+Order service
+Inventory service
+Payment service
+Coupon service
+```
+
+Integration tests:
+
+```txt
+Customer registration
+Login
+Add to cart
+Place order
+Confirm order
+Assign captain
+Deliver order
+Cancel order
+```
+
+---
+
+# 28. Swagger / OpenAPI Requirement
+
+Backend must expose:
+
+```http
+GET /api-docs
+```
+
+Swagger should include:
+
+```txt
+All endpoints
+Request DTOs
+Response DTOs
+Auth token support
+Role access notes
+Error responses
+Try it out support for testing APIs from browser
+Bearer token authorization button in Swagger UI
+```
+
+Swagger UI usage:
+
+```txt
+Open http://localhost:5000/api-docs
+Use the Authorize button to paste Bearer <access_token>
+Run protected APIs directly from Swagger using Try it out
+Use request bodies, query params, path params, and multipart upload from the UI
+```
+
+---
+
+# 29. Final Backend Deliverables
+
+```txt
+Complete Node.js TypeScript backend
+Prisma schema
+MySQL migrations
+JWT auth
+Refresh token flow
+Role-based middleware
+All APIs listed above
+Order transaction logic
+Inventory transaction logic
+Captain delivery flow
+COD payment flow
+Notification queue structure
+Swagger documentation
+Dockerfile
+docker-compose.yml
+.env.example
+README with setup commands
+```
+
+---
+
+# 30. Local Development Commands
+
+```bash
+npm install
+npx prisma generate
+npx prisma migrate dev
+npm run dev
+```
+
+---
+
+# 31. Production Commands
+
+```bash
+npm run build
+npm run start
+```
+
+Docker:
+
+```bash
+docker compose up -d --build
+```
+
+---
+
+# 32. Final Priority
+
+For the first village pilot, backend priority should be:
+
+```txt
+No missed orders
+Correct inventory
+Simple order flow
+Fast shop owner confirmation
+Reliable captain delivery update
+COD/UPI handling
+Clean admin dashboard APIs
+```
+
+After ground testing works, add:
+
+```txt
+Live map tracking
+Auto captain assignment
+Online payment gateway
+Offer engine
+Customer wallet
+AI product recommendation
+Multi-village expansion
+```
