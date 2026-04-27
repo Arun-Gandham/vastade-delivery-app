@@ -8,9 +8,9 @@ These APIs must use DB transactions:
 POST /orders
 POST /orders/:orderId/cancel
 POST /shop-owner/orders/:orderId/cancel
-POST /captains/orders/:orderId/delivered
+POST /captain/tasks/:taskId/accept
+POST /captain/tasks/:taskId/delivered
 POST /shop-owner/shops/:shopId/inventory/:productId/adjust
-POST /admin/orders/:orderId/assign-captain
 ```
 
 ---
@@ -138,7 +138,10 @@ Login
 Add to cart
 Place order
 Confirm order
-Assign captain
+Approve captain
+Create delivery task when order is ready for pickup
+Offer task to nearby captains
+Captain accepts first-offer-wins task
 Deliver order
 Cancel order
 ```
@@ -193,7 +196,9 @@ Role-based middleware
 All APIs listed above
 Order transaction logic
 Inventory transaction logic
-Captain delivery flow
+Captain self-registration flow
+Captain verification flow
+Generic delivery task flow
 COD payment flow
 Notification queue structure
 Swagger documentation
@@ -246,7 +251,7 @@ No missed orders
 Correct inventory
 Simple order flow
 Fast shop owner confirmation
-Reliable captain delivery update
+Reliable captain verification and delivery update
 COD/UPI handling
 Clean admin dashboard APIs
 ```
@@ -254,8 +259,7 @@ Clean admin dashboard APIs
 After ground testing works, add:
 
 ```txt
-Live map tracking
-Auto captain assignment
+Live map tracking polish
 Online payment gateway
 Offer engine
 Customer wallet

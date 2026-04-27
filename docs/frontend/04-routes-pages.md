@@ -52,6 +52,7 @@ Public landing page expectations:
 ## Captain routes
 
 ```txt
+/captain/register
 /captain
 /captain/login
 /captain/orders
@@ -59,6 +60,13 @@ Public landing page expectations:
 /captain/profile
 /captain/earnings
 /captain/notifications
+```
+
+Current note:
+
+```txt
+The current unified Next.js app still hosts captain screens.
+The backend APIs are already designed so captain flows can move to a dedicated captain web or mobile client later.
 ```
 
 ## Shop owner routes
@@ -147,7 +155,7 @@ Super admin has its own mirrored management route space and should stay inside `
 
 ## Required page behavior
 
-Login page must support all roles and redirect by role. Customer pages must support product browsing, cart, checkout, orders, addresses, profile, and notifications. Shop owner pages must support shops, dashboard, inventory, orders, reports, and open/close status. Captain pages must support online status, location, assigned orders, pickup, delivery, and COD collection. Admin pages must support dashboard, shops, categories, products, orders, captains, coupons, reports, and settings.
+Login page must support all roles and redirect by role. Customer pages must support product browsing, cart, checkout, orders, addresses, profile, notifications, and delivery tracking. Shop owner pages must support shops, dashboard, inventory, orders, reports, and open/close status. Captain pages must support self-registration status, online status, location updates, task offers, assigned task progression, earnings, and notifications. Admin pages must support dashboard, shops, categories, products, orders, captain verification, delivery-task oversight, coupons, reports, and settings.
 
 Admin and super-admin management route expectations:
 
@@ -165,4 +173,13 @@ Customer storefront expectations:
 /customer should attempt location-based address capture when no saved delivery context exists
 /customer should recover from stale selected shop state by falling back to the first valid nearby shop
 /customer home should show categories, nearby shops, product sections, and recent orders
+```
+
+Captain UX expectations:
+
+```txt
+Captain registration should collect identity, vehicle, license, bank, and agreement details
+Captain task screens should be modeled around generic delivery tasks, not only grocery orders
+Captain pages should avoid reusing customer order cards and customer order-detail assumptions
+Captain offer screens should show earning estimate, pickup/drop, and accept or reject actions
 ```

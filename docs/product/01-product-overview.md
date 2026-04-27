@@ -8,7 +8,7 @@ The system supports:
 
 - customer web app
 - future customer mobile app
-- captain or delivery partner app
+- captain or delivery partner app, with option to separate into its own web or mobile client
 - shop owner or store manager panel
 - admin and super-admin web panel
 
@@ -50,7 +50,7 @@ Branded customer storefront for the public shopping experience
 - customers can manage addresses and place orders
 - customers can track recent orders
 - shop owners can manage inventory and order handling
-- captains can accept and deliver assigned orders
+- captains self-register, get verified by admin, and accept delivery tasks across grocery and parcel flows
 - admins can manage catalog, orders, shops, captains, and reports
 
 ## Current implementation notes
@@ -61,3 +61,4 @@ Branded customer storefront for the public shopping experience
 - Images upload directly to S3.
 - The database stores only S3 object keys.
 - Read APIs return browser-safe image URLs for rendering.
+- Delivery orchestration now uses a generic `delivery_tasks` model so grocery delivery and parcel logistics share the same captain engine.

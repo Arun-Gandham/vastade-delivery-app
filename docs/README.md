@@ -19,6 +19,9 @@ docs/
 - database persistence of S3 object keys instead of full image URLs
 - API responses that resolve browser-safe `imageUrl` fields for the frontend
 - support for both public S3 buckets and private buckets with signed read URLs
+- captain self-registration with admin-only verification
+- generic `delivery_tasks` shared across grocery, parcel, and future logistics services
+- delivery APIs designed so captain-web or mobile clients can be separated from the current unified frontend later
 
 ## Recommended reading order
 

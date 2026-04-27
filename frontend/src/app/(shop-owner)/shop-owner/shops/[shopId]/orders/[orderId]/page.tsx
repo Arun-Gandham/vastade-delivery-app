@@ -1,8 +1,6 @@
 "use client";
 
 import { useParams } from "next/navigation";
-import { useQuery } from "@tanstack/react-query";
-import { queryKeys } from "@/constants/query-keys";
 import { DashboardShell } from "@/components/layout/dashboard-shell";
 import { DataState } from "@/components/shared/data-state";
 import { Button } from "@/components/ui/button";
@@ -12,16 +10,14 @@ import { StatusBadge } from "@/components/ui/status-badge";
 import { orderApi } from "@/features/orders/order.api";
 import { useOrderMutations } from "@/features/orders/order.hooks";
 import { getErrorMessage } from "@/lib/utils/errors";
+import { useQuery } from "@tanstack/react-query";
+import { queryKeys } from "@/constants/query-keys";
 
 export default function ShopOrderDetailPage() {
   const params = useParams<{ shopId: string; orderId: string }>();
   const orderQuery = useQuery({
     queryKey: queryKeys.order(params.orderId),
     queryFn: () => orderApi.shopOrderDetails(params.shopId, params.orderId),
-  });
-  const captainsQuery = useQuery({
-    queryKey: queryKeys.availableCaptains,
-    queryFn: orderApi.availableCaptains,
   });
   const mutations = useOrderMutations();
 
@@ -63,19 +59,6 @@ export default function ShopOrderDetailPage() {
               </Button>
               <Button variant="outline" onClick={() => mutations.readyForPickup.mutate(orderQuery.data!.id)}>
                 Ready for Pickup
-              </Button>
-              <Button
-                variant="outline"
-                disabled={!captainsQuery.data?.[0]}
-                onClick={() =>
-                  captainsQuery.data?.[0] &&
-                  mutations.assignCaptainByShop.mutate({
-                    orderId: orderQuery.data!.id,
-                    captainId: captainsQuery.data[0].id,
-                  })
-                }
-              >
-                Assign First Available Captain
               </Button>
               <Button
                 variant="danger"

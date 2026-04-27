@@ -45,7 +45,10 @@ export const roleMiddleware =
       );
     }
 
-    if (!roles.includes(req.authUser.role)) {
+    const normalizedAllowedRoles = roles.map((role) => String(role).trim().toUpperCase());
+    const normalizedUserRole = String(req.authUser.role).trim().toUpperCase();
+
+    if (!normalizedAllowedRoles.includes(normalizedUserRole)) {
       throw new AppError("Forbidden", StatusCodes.FORBIDDEN, ERROR_CODES.AUTH_FORBIDDEN);
     }
 

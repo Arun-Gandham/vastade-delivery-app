@@ -56,6 +56,8 @@ features/inventory/inventory.api.ts
 features/cart/cart.api.ts
 features/orders/order.api.ts
 features/captain/captain.api.ts
+features/delivery-tasks/delivery-task.api.ts
+features/parcels/parcel.api.ts
 features/payments/payment.api.ts
 features/coupons/coupon.api.ts
 features/uploads/upload.api.ts
@@ -111,4 +113,24 @@ Support backend success and error response formats:
 
 ## Query hooks
 
-Use TanStack Query hooks such as `useLoginMutation`, `useProductsQuery`, `useCartQuery`, `usePlaceOrderMutation`, `useShopOrdersQuery`, `useCaptainOrdersQuery`, and `useAdminDashboardQuery`.
+Use TanStack Query hooks such as `useLoginMutation`, `useProductsQuery`, `useCartQuery`, `usePlaceOrderMutation`, `useShopOrdersQuery`, `useCaptainTasksQuery`, `useCaptainTaskAcceptMutation`, `useCaptainLocationUpdateMutation`, `useAdminCaptainsQuery`, `useAdminDeliveryTasksQuery`, and `useAdminDashboardQuery`.
+
+## Captain and delivery integration rules
+
+Frontend clients should treat the captain and dispatch APIs as cross-client contracts for web and mobile reuse.
+
+Required behavior:
+
+```txt
+Use /captain/register for self-registration
+Use /captain/me and /captain/profile for captain account surfaces
+Use /captain/go-online and /captain/go-offline for availability state
+Use /captain/location/update for live captain location
+Use /captain/tasks/* endpoints for accept, reject, and status progression
+Build captain pages against delivery-task responses instead of reusing customer order response assumptions
+Use /orders/:orderId/delivery and /orders/:orderId/tracking for customer delivery tracking
+Use /shop/orders/:orderId/delivery and /shop/delivery-tasks/:taskId/tracking for shop delivery tracking
+Use /parcels endpoints for parcel creation and self-service parcel history
+Do not build shop-side captain creation or approval forms
+Do not call or document manual assign-captain APIs
+```

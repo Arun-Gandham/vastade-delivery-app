@@ -1,4 +1,5 @@
 import {
+  DeliveryTaskStatus,
   DeliveryAssignmentStatus,
   OrderStatus,
   PaymentMode,
@@ -23,6 +24,7 @@ import { auditLogService } from "../audit-logs/audit-log.service";
 import { addressRepository } from "../addresses/address.repository";
 import { cartRepository } from "../cart/cart.repository";
 import { couponService } from "../coupons/coupon.service";
+import { deliveryTaskService } from "../delivery-tasks/delivery-task.service";
 import { inventoryRepository } from "../inventory/inventory.repository";
 import { shopService } from "../shops/shop.service";
 import { orderRepository } from "./order.repository";
@@ -306,6 +308,11 @@ export const orderService = {
         newValue: { status: nextStatus, remarks }
       });
 
+      return updated;
+    }).then(async (updated) => {
+      if (nextStatus === OrderStatus.READY_FOR_PICKUP) {
+        await deliveryTaskService.createForOrder(orderId);
+      }
       return updated;
     });
   },
@@ -700,6 +707,20 @@ export const orderService = {
         },
         tx
       );
+      await tx.deliveryTask.updateMany({
+        where: {
+          referenceTable: "orders",
+          referenceId: order.id,
+          status: {
+            notIn: [DeliveryTaskStatus.DELIVERED]
+          }
+        },
+        data: {
+          status: DeliveryTaskStatus.CANCELLED,
+          cancelledAt: new Date(),
+          failureReason: reason
+        }
+      });
       await orderRepository.createStatusHistory(
         {
           orderId: order.id,

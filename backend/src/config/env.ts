@@ -31,7 +31,12 @@ const envSchema = z.object({
   S3_KEY_PREFIX: z.string().optional(),
   S3_UPLOAD_URL_EXPIRES_IN: z.coerce.number().int().min(60).max(3600).default(300),
   S3_READ_URL_EXPIRES_IN: z.coerce.number().int().min(60).max(86400).default(3600),
-  S3_BUCKET_PUBLIC: z.coerce.boolean().default(false)
+  S3_BUCKET_PUBLIC: z.coerce.boolean().default(false),
+  CAPTAIN_MATCH_RADIUS_KM: z.coerce.number().positive().default(5),
+  CAPTAIN_MATCH_LIMIT: z.coerce.number().int().positive().default(10),
+  CAPTAIN_TASK_OFFER_EXPIRES_IN_SECONDS: z.coerce.number().int().positive().default(45),
+  SOCKET_ENABLED: z.coerce.boolean().default(true),
+  FCM_ENABLED: z.coerce.boolean().default(false)
 });
 
 export const env = envSchema.parse(process.env);

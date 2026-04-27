@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { CaptainAppShell } from "@/components/layout/captain-app-shell";
-import { OrderCard } from "@/components/customer/order-card";
+import { CaptainTaskCard } from "@/components/captain/captain-task-card";
 import { DataState } from "@/components/shared/data-state";
 import { PageContainer } from "@/components/shared/page-container";
 import { StatCard } from "@/components/dashboard/stat-card";
@@ -46,14 +46,14 @@ export default function CaptainDashboardPage() {
         }
       >
         <div className="dashboard-grid">
-          <StatCard label="Assigned Orders" value={ordersQuery.data?.length || 0} />
+          <StatCard label="Active Tasks" value={ordersQuery.data?.length || 0} />
           <StatCard label="Cash In Hand" value={formatCurrency(profileQuery.data?.cashInHand || 0)} />
           <StatCard label="Availability" value={profileQuery.data?.isAvailable ? "Available" : "Busy"} />
-          <StatCard label="Status" value={profileQuery.data?.isOnline ? "Online" : "Offline"} />
+          <StatCard label="Status" value={profileQuery.data?.availabilityStatus || (profileQuery.data?.isOnline ? "ONLINE" : "OFFLINE")} />
         </div>
         <section className="space-y-4">
           <div className="flex items-center justify-between">
-            <h2 className="text-xl font-semibold">Active Orders</h2>
+            <h2 className="text-xl font-semibold">Active Tasks</h2>
             <Link href="/captain/orders" className="text-sm text-[var(--color-primary)]">
               View all
             </Link>
@@ -62,11 +62,11 @@ export default function CaptainDashboardPage() {
             isLoading={ordersQuery.isLoading}
             error={getErrorMessage(ordersQuery.error, "")}
             isEmpty={!ordersQuery.data?.length}
-            emptyTitle="No assigned orders"
-            emptyDescription="Accepted and assigned deliveries will appear here."
+            emptyTitle="No delivery tasks"
+            emptyDescription="Task offers and assigned deliveries will appear here."
           >
             <div className="grid gap-4 md:grid-cols-2">
-              {ordersQuery.data?.map((order) => <OrderCard key={order.id} order={order} basePath="/captain/orders" />)}
+              {ordersQuery.data?.map((task) => <CaptainTaskCard key={task.id} task={task} basePath="/captain/orders" />)}
             </div>
           </DataState>
         </section>

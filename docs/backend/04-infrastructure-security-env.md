@@ -63,15 +63,25 @@ lowStockAlertJob
 
 # 14. Real-Time Events
 
-For MVP, polling is acceptable. Later use Socket.IO.
+Backend should be ready for real-time assignment using Socket.IO or WebSocket-style event delivery. FCM can remain a later integration if mobile push is not yet installed.
 
 ```txt
-order.created
-order.status.updated
-order.assigned
-captain.location.updated
-payment.updated
-inventory.low_stock
+captain:connect
+captain:go_online
+captain:go_offline
+captain:location_update
+captain:task_offer_received
+captain:task_offer_expired
+captain:task_accepted
+captain:task_cancelled
+captain:task_status_updated
+captain:earnings_updated
+delivery_task_created
+delivery_task_assigned
+captain_location_updated
+delivery_status_updated
+order_out_for_delivery
+order_delivered
 ```
 
 ---
@@ -101,6 +111,10 @@ Do not proxy or permanently store uploaded images on the backend server
 Use parameterized DB queries through Prisma
 Do not expose stack traces in production
 Store secrets in environment variables
+Keep captain legal-document objects private in S3
+Issue signed/private URLs only to admin users and to the owning captain
+Never expose legal proof URLs to shop or customer clients
+Expose only masked/basic captain delivery details to shop/customer after assignment
 ```
 
 ---
@@ -134,6 +148,16 @@ S3_READ_URL_EXPIRES_IN=3600
 S3_BUCKET_PUBLIC=false
 WHATSAPP_API_TOKEN=
 SMS_API_KEY=
+```
+
+Additional delivery and captain environment variables:
+
+```env
+CAPTAIN_MATCH_RADIUS_KM=5
+CAPTAIN_MATCH_LIMIT=10
+CAPTAIN_TASK_OFFER_EXPIRES_IN_SECONDS=45
+SOCKET_ENABLED=true
+FCM_ENABLED=false
 ```
 
 ## 17. Direct Upload Flow

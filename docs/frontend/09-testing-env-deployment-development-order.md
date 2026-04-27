@@ -33,7 +33,7 @@ Mocking: MSW optional
 
 ## E2E flows
 
-Test customer login, add to cart, place order, cancel order, shop owner confirm order, shop owner mark ready for pickup, captain accept order, captain mark picked up, captain mark delivered, admin dashboard, and admin assign captain.
+Test customer login, add to cart, place order, cancel order, shop owner confirm order, shop owner mark ready for pickup, delivery-task creation, captain self-registration, admin captain approval, captain go online, captain accept task, captain mark picked up, captain mark delivered, parcel creation, customer tracking, and admin dashboard.
 
 ## Deployment
 
@@ -52,7 +52,7 @@ Deploy to Vercel or Docker + Nginx. Include Dockerfile and `.dockerignore`.
 8. Customer shops/products/cart/checkout/orders
 9. Shop owner layout and dashboard
 10. Shop owner inventory and order flow
-11. Captain layout and delivery flow
+11. Captain layout and self-registration plus delivery-task flow
 12. Admin layout and dashboard
 13. Admin category/product/shop/order pages
 14. Notifications

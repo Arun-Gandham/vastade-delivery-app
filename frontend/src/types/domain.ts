@@ -176,12 +176,69 @@ export type CaptainProfile = {
   vehicleType: VehicleType;
   vehicleNumber?: string | null;
   licenseNumber?: string | null;
+  registrationStatus?: string;
+  availabilityStatus?: string;
   isOnline: boolean;
   isAvailable: boolean;
   currentLatitude?: number | string | null;
   currentLongitude?: number | string | null;
   cashInHand: number | string;
   user?: User;
+};
+
+export type CaptainTaskOffer = {
+  id: string;
+  captainId: string;
+  deliveryTaskId: string;
+  status: string;
+  distanceToPickupKm?: number | string | null;
+  pickupToDropKm?: number | string | null;
+  estimatedEarning?: number | string | null;
+  offeredAt?: string;
+  respondedAt?: string | null;
+  expiresAt?: string | null;
+  rejectionReason?: string | null;
+};
+
+export type CaptainEarning = {
+  id: string;
+  captainId: string;
+  deliveryTaskId: string;
+  amount: number | string;
+  status?: string;
+  createdAt?: string;
+};
+
+export type DeliveryTask = {
+  id: string;
+  taskType: string;
+  referenceId: string;
+  referenceTable: string;
+  captainId?: string | null;
+  status: string;
+  pickupName?: string | null;
+  pickupPhone?: string | null;
+  pickupAddress: string;
+  pickupLatitude?: number | string | null;
+  pickupLongitude?: number | string | null;
+  dropName?: string | null;
+  dropPhone?: string | null;
+  dropAddress: string;
+  dropLatitude?: number | string | null;
+  dropLongitude?: number | string | null;
+  deliveryFee: number | string;
+  distanceKm?: number | string | null;
+  estimatedPickupAt?: string | null;
+  estimatedDeliveryAt?: string | null;
+  assignedAt?: string | null;
+  pickedUpAt?: string | null;
+  deliveredAt?: string | null;
+  cancelledAt?: string | null;
+  failureReason?: string | null;
+  createdAt?: string;
+  updatedAt?: string;
+  offers?: CaptainTaskOffer[];
+  earnings?: CaptainEarning[];
 };
 
 export type Notification = {

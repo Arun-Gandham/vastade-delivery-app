@@ -64,7 +64,7 @@ CAPTAIN
 | SHOP_OWNER    | Owns one or multiple shops/stores          |
 | STORE_MANAGER | Manages orders and inventory for one store |
 | CUSTOMER      | Places grocery orders                      |
-| CAPTAIN       | Delivery partner                           |
+| CAPTAIN       | Self-registered delivery partner reviewed by admin |
 
 ---
 
@@ -91,6 +91,19 @@ Upload Module
 Admin Dashboard Module
 Shop Owner Dashboard Module
 Audit Log Module
+Delivery Task Module
+Parcel Module
+```
+
+## Captain and logistics architecture direction
+
+```txt
+Captains are not created by admin or shop users
+Captains register themselves
+Admin verifies legal documents and controls approval/blocking
+Delivery is modeled through a generic Delivery Task abstraction
+Delivery Task supports grocery, parcel, medicine, food, and future custom logistics
+Captain web/mobile clients can remain separate from the main customer/shop/admin frontend
 ```
 
 ---

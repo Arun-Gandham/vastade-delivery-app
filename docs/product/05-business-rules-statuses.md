@@ -1,16 +1,10 @@
 # Business Rules and Statuses
 
-This file is the shared source of truth for statuses, enums, cart rules, order rules, inventory rules, COD rules, pagination, sorting, search, and soft delete.
+This file is the shared rules reference for orders, captains, delivery tasks, payments, search, pagination, and operational security.
 
----
+## Core enums
 
-## Enums
-
-# Enums
-
-# 8. Enums
-
-## OrderStatus
+Order status:
 
 ```txt
 PLACED
@@ -25,7 +19,7 @@ FAILED
 REFUNDED
 ```
 
-## PaymentMode
+Payment mode:
 
 ```txt
 COD
@@ -33,7 +27,7 @@ UPI_MANUAL
 RAZORPAY
 ```
 
-## PaymentStatus
+Payment status:
 
 ```txt
 PENDING
@@ -44,83 +38,81 @@ COD_PENDING
 COD_COLLECTED
 ```
 
-## DeliveryAssignmentStatus
+Captain registration status:
 
 ```txt
-ASSIGNED
+SUBMITTED
+PENDING_VERIFICATION
+APPROVED
+REJECTED
+BLOCKED
+```
+
+Captain availability status:
+
+```txt
+OFFLINE
+ONLINE
+BUSY
+```
+
+Delivery task type:
+
+```txt
+GROCERY
+PARCEL
+FOOD
+MEDICINE
+CUSTOM
+```
+
+Delivery task status:
+
+```txt
+CREATED
+SEARCHING_CAPTAIN
+OFFERED_TO_CAPTAINS
+ACCEPTED
+CAPTAIN_REACHED_PICKUP
+PICKED_UP
+CAPTAIN_REACHED_DROP
+DELIVERED
+CANCELLED
+FAILED
+```
+
+Captain task-offer status:
+
+```txt
+SENT
 ACCEPTED
 REJECTED
-PICKED_UP
-DELIVERED
+EXPIRED
 CANCELLED
 ```
 
----
+## Order rules
 
-
----
-
-## Business Rules
-
-# Business Rules
-
-# 10. Business Rules
-
-## Cart Rules
+Order placement:
 
 ```txt
-One active cart per customer per shop
-Cart cannot contain products from multiple shops
-Product price must be copied into cart_items when added
-Cart must validate latest price and stock during checkout
+Order creation must run in a DB transaction
+Inventory reservation must happen in the same transaction
+Cart clears only after successful order creation
+Order number must remain unique
+Order-status history should be recorded
 ```
 
-## Order Placement Rules
-
-```txt
-Order must be created inside DB transaction
-Inventory must be reserved inside same transaction
-Cart must be cleared after successful order
-Order number must be unique
-Order status history must be created
-Notification event must be queued after transaction success
-```
-
-## Inventory Rules
-
-During order placement:
-
-```txt
-availableStock -= quantity
-reservedStock += quantity
-```
-
-During cancellation:
-
-```txt
-reservedStock -= quantity
-availableStock += quantity
-```
-
-During delivery:
-
-```txt
-reservedStock -= quantity
-soldStock += quantity
-```
-
-Never allow stock values below zero.
-
-## Order Status Flow
+Order status progression:
 
 ```txt
 PLACED
-  -> CONFIRMED
-  -> PACKING
-  -> READY_FOR_PICKUP
-  -> ASSIGNED_TO_CAPTAIN
-  -> OUT_FOR_DELIVERY
-  -> DELIVERED
+-> CONFIRMED
+-> PACKING
+-> READY_FOR_PICKUP
+-> ASSIGNED_TO_CAPTAIN
+-> OUT_FOR_DELIVERY
+-> DELIVERED
 ```
 
 Cancellation allowed from:
@@ -132,66 +124,188 @@ PACKING
 READY_FOR_PICKUP
 ```
 
-Cancellation not allowed after:
+Cancellation blocked after:
 
 ```txt
 OUT_FOR_DELIVERY
 DELIVERED
 ```
 
-## COD Rules
+## Inventory rules
+
+On order placement:
+
+```txt
+availableStock -= quantity
+reservedStock += quantity
+```
+
+On cancellation:
+
+```txt
+reservedStock -= quantity
+availableStock += quantity
+```
+
+On completed delivery:
+
+```txt
+reservedStock -= quantity
+soldStock += quantity
+```
+
+Never allow negative stock values.
+
+## COD rules
 
 ```txt
 If paymentMode = COD, paymentStatus = COD_PENDING
 When captain delivers, paymentStatus = COD_COLLECTED
-Captain cashInHand increases by COD amount
+Captain cash-in-hand or settlement balance should be updated by settlement logic
 ```
 
----
+## Captain registration and verification rules
 
+```txt
+Captains must self-register
+Admin only can approve, reject, block, or unblock captains
+Shop users cannot create, edit, or approve captains
+Captain must accept agreement and terms during registration
+Captain legal-document objects must stay private
+Only approved captains may go online or accept tasks
+Blocked captains cannot go online or receive offers
+```
 
----
+## Delivery-task rules
 
-## Transactions, Pagination, Sorting, Search, Soft Delete, Testing, Swagger, and Deliverables
+Generic task model:
 
-# Transactions, Pagination, Testing, Swagger, Deliverables
+```txt
+delivery_tasks is the dispatch layer for grocery, parcel, and future logistics services
+Orders and parcel orders reference delivery_tasks through referenceTable + referenceId
+Captains are assigned to delivery tasks, not only directly to grocery orders
+```
 
-# 21. Critical Transaction APIs
+Task creation rules:
 
-These APIs must use DB transactions:
+```txt
+Grocery task is created when a prepared order becomes ready for pickup
+Parcel task is created when a parcel order is submitted and accepted by business rules
+captainId is nullable until assignment succeeds
+pickup/drop coordinates should be stored when available
+```
+
+Task-assignment rules:
+
+```txt
+Captain must be APPROVED
+Captain must be ONLINE
+Captain must not be BUSY
+Captain must be within configured matching radius
+Nearest captains should receive offers first
+First valid acceptance wins
+Competing offers must expire or cancel
+Acceptance must use transaction and lock semantics
+```
+
+Captain task-status update rules:
+
+```txt
+Only the assigned captain can update an assigned task
+Task status must move forward through valid transitions
+Reached-pickup comes before picked-up
+Reached-drop comes before delivered
+Delivered or failed should release captain availability from BUSY
+```
+
+## Privacy and data-exposure rules
+
+Admin can see:
+
+```txt
+Captain profile
+Legal documents
+Verification history
+Delivery history
+Earnings
+```
+
+Captain can see:
+
+```txt
+Own profile
+Own submitted documents
+Own tasks
+Own earnings
+```
+
+Shop and customer can see only after assignment:
+
+```txt
+Captain name
+Captain phone if policy allows
+Vehicle type
+Masked vehicle number if needed
+Rating if available
+Live location for active delivery if policy allows
+```
+
+Shop and customer must never see:
+
+```txt
+Driving-license proofs
+Aadhaar or PAN proofs
+RC legal document files
+Bank details
+Internal verification logs
+```
+
+## Critical transaction APIs
+
+These APIs must be transaction-safe:
 
 ```txt
 POST /orders
 POST /orders/:orderId/cancel
 POST /shop-owner/orders/:orderId/cancel
-POST /captains/orders/:orderId/delivered
+POST /captain/tasks/:taskId/accept
+POST /captain/tasks/:taskId/delivered
+POST /captain/tasks/:taskId/failed
+POST /parcels
 POST /shop-owner/shops/:shopId/inventory/:productId/adjust
-POST /admin/orders/:orderId/assign-captain
 ```
 
----
+## Real-time event baseline
 
----
-
-# 22. Order Number Format
+Captain-side events:
 
 ```txt
-QC-YYYYMMDD-000001
+captain:connect
+captain:go_online
+captain:go_offline
+captain:location_update
+captain:task_offer_received
+captain:task_offer_expired
+captain:task_accepted
+captain:task_cancelled
+captain:task_status_updated
+captain:earnings_updated
 ```
 
-Example:
+Shared platform events:
 
 ```txt
-QC-20260425-000001
+delivery_task_created
+delivery_task_assigned
+captain_location_updated
+delivery_status_updated
+order_out_for_delivery
+order_delivered
 ```
 
----
+## Pagination, sorting, and search
 
----
-
-# 23. Pagination Standard
-
-Request:
+Pagination request:
 
 ```txt
 ?page=1&limit=20
@@ -208,34 +322,21 @@ Response meta:
 }
 ```
 
----
-
----
-
-# 24. Sorting Standard
+Sorting:
 
 ```txt
 ?sortBy=createdAt&sortOrder=desc
 ```
 
-Allowed sortOrder:
-
-```txt
-asc
-desc
-```
-
----
-
----
-
-# 25. Search Standard
+Search examples:
 
 ```txt
 ?search=milk
+?search=QC-20260425-000001
+?search=9876543210
 ```
 
-Search in:
+Suggested searchable fields:
 
 ```txt
 Product name
@@ -244,188 +345,6 @@ SKU
 Order number
 Customer mobile
 Shop name
-```
-
----
-
----
-
-# 26. Soft Delete Standard
-
-Do not hard delete important data.
-
-Use:
-
-```txt
-isActive = false
-```
-
-For:
-
-```txt
-users
-shops
-categories
-products
-captains
-```
-
----
-
----
-
-# 27. Testing Requirements
-
-Unit tests:
-
-```txt
-Auth service
-Order service
-Inventory service
-Payment service
-Coupon service
-```
-
-Integration tests:
-
-```txt
-Customer registration
-Login
-Add to cart
-Place order
-Confirm order
-Assign captain
-Deliver order
-Cancel order
-```
-
----
-
----
-
-# 28. Swagger / OpenAPI Requirement
-
-Backend must expose:
-
-```http
-GET /api-docs
-```
-
-Swagger should include:
-
-```txt
-All endpoints
-Request DTOs
-Response DTOs
-Auth token support
-Role access notes
-Error responses
-Try it out support for testing APIs from browser
-Bearer token authorization button in Swagger UI
-```
-
-Swagger UI usage:
-
-```txt
-Open http://localhost:5000/api-docs
-Use the Authorize button to paste Bearer <access_token>
-Run protected APIs directly from Swagger using Try it out
-Use request bodies, query params, path params, and the JSON upload-signing flow from the UI
-```
-
-## Image handling rules
-
-```txt
-Image binaries must upload directly to S3
-Database records must store only S3 object keys
-Frontend must render using resolved browser-safe image URLs
-Do not send s3:// object paths to the browser for img src usage
-Private buckets must use signed read URLs from the backend
-Public buckets may use S3_PUBLIC_BASE_URL-based HTTPS URLs
-```
-
----
-
----
-
-# 29. Final Backend Deliverables
-
-```txt
-Complete Node.js TypeScript backend
-Prisma schema
-MySQL migrations
-JWT auth
-Refresh token flow
-Role-based middleware
-All APIs listed above
-Order transaction logic
-Inventory transaction logic
-Captain delivery flow
-COD payment flow
-Notification queue structure
-Swagger documentation
-Dockerfile
-docker-compose.yml
-.env.example
-README with setup commands
-```
-
----
-
----
-
-# 30. Local Development Commands
-
-```bash
-npm install
-npx prisma generate
-npx prisma migrate dev
-npm run dev
-```
-
----
-
----
-
-# 31. Production Commands
-
-```bash
-npm run build
-npm run start
-```
-
-Docker:
-
-```bash
-docker compose up -d --build
-```
-
----
-
----
-
-# 32. Final Priority
-
-For the first village pilot, backend priority should be:
-
-```txt
-No missed orders
-Correct inventory
-Simple order flow
-Fast shop owner confirmation
-Reliable captain delivery update
-COD/UPI handling
-Clean admin dashboard APIs
-```
-
-After ground testing works, add:
-
-```txt
-Live map tracking
-Auto captain assignment
-Online payment gateway
-Offer engine
-Customer wallet
-AI product recommendation
-Multi-village expansion
+Captain mobile
+Parcel tracking or reference number
 ```

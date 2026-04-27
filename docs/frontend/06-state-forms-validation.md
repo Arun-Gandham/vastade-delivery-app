@@ -21,7 +21,7 @@ Use Zustand or Context for auth user, selected shop, selected address, cart summ
 
 ## Form validation schemas
 
-Create zod schemas for login, customer register, captain register, profile update, address create/update, category create/update, product create/update, shop create/update, inventory update, stock adjust, cart item add/update, place order, cancel order, captain delivered, coupon create/update, and manual UPI mark paid.
+Create zod schemas for login, customer register, captain register, captain document upload, captain profile update, captain bank details, address create/update, category create/update, product create/update, shop create/update, inventory update, stock adjust, cart item add/update, place order, cancel order, captain task status update, coupon create/update, parcel create, and manual UPI mark paid.
 
 ## UX rules
 
@@ -45,4 +45,4 @@ Admin and shop owner tables should support pagination, search, sort, filters, lo
 
 ## Confirmation dialogs
 
-Use confirmation dialogs for delete address, delete category, delete product, cancel order, clear cart, assign captain, mark delivered, stock adjustment, and logout.
+Use confirmation dialogs for delete address, delete category, delete product, cancel order, clear cart, mark task failed, mark delivered, stock adjustment, captain go offline while busy if allowed, and logout.

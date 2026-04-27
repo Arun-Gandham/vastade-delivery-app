@@ -57,3 +57,19 @@
 - Updated frontend docs so typography scale, spacing, search sizing, footer density, and dashboard chrome reflect the current public-page design language.
 - Updated docs to reflect shared route-level dashboard layouts for admin and super-admin, plus the current `SUPER_ADMIN -> /super-admin/dashboard` redirect behavior.
 - Updated docs to reflect list-only admin and super-admin management pages, dedicated create and edit routes for shops/products/categories/coupons, and mirrored super-admin management routes.
+
+## 2026-04-27
+
+### Changed
+- Updated frontend-facing docs to reflect captain self-registration, admin-only captain verification, generic delivery-task APIs, parcel support, and the future option to split captain flows into a dedicated web or mobile client.
+
+## 2026-04-27
+
+### Changed
+- Removed shop-owner order-detail dependency on admin-only available-captain APIs to avoid role-based 403 responses during normal shop usage.
+- Updated captain availability and location actions to use the current `/captain/go-online`, `/captain/go-offline`, and `/captain/location/update` backend endpoints.
+
+## 2026-04-27
+
+### Changed
+- Reworked captain dashboard and captain detail screens to use captain-specific delivery-task data instead of the old shared order-card and direct order-action flow.

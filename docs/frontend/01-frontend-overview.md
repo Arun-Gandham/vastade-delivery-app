@@ -93,4 +93,4 @@ Admin and super-admin management pages use list-first screens, with dedicated cr
 Typography, spacing, and component sizing aligned to the newer public-page design language
 ```
 
-Do not build future features like wallet, AI recommendation, complex settlement, live map tracking, or auto captain assignment unless the docs are updated.
+Do not build future features like wallet, AI recommendation, complex settlement, advanced settlement reconciliation, or polished map-heavy dispatch UX unless the docs are updated. Basic captain task offers, task acceptance, and delivery tracking are already part of the current platform direction.

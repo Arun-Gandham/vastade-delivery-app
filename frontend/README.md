@@ -71,6 +71,19 @@ The current visual baseline follows the newer public-page design language:
 Admin and super-admin now use route-level shared dashboard layouts, so menu changes keep the same sidebar and topbar mounted while only the page content swaps.
 Management screens now follow a cleaner pattern where list pages stay focused on table or card browsing, while create and edit flows open on separate routes.
 
+## Captain product direction
+
+Captain onboarding no longer belongs to admin or shop management flows.
+
+Current rules:
+
+- captains self-register
+- admins verify and review captains
+- shops do not create or approve captains
+- captain delivery work is modeled around generic delivery tasks, not only grocery orders
+
+The current Next.js app can still host captain pages, but the backend API contract is intentionally prepared for a later split into a dedicated `captain-web` or mobile captain app.
+
 ## Setup
 
 ```bash

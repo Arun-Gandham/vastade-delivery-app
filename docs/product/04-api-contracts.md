@@ -36,8 +36,27 @@ POST /auth/login
 POST /auth/refresh-token
 POST /auth/logout
 POST /auth/change-password
+POST /captain/register
+POST /captain/login
 GET /users/me
 PATCH /users/me
+```
+
+## Captain self-registration
+
+Endpoints:
+
+```txt
+POST /captain/register
+POST /captain/login
+GET /captain/me
+PUT /captain/profile
+POST /captain/go-online
+POST /captain/go-offline
+POST /captain/location/update
+POST /captain/documents/upload
+GET /captain/documents
+DELETE /captain/documents/:id
 ```
 
 Profile update request:
@@ -178,6 +197,8 @@ POST /orders
 GET /orders/my?status=PLACED&page=1&limit=20
 GET /orders/:orderId
 POST /orders/:orderId/cancel
+GET /orders/:orderId/delivery
+GET /orders/:orderId/tracking
 ```
 
 Shop-owner order endpoints:
@@ -189,17 +210,58 @@ POST /shop-owner/orders/:orderId/confirm
 POST /shop-owner/orders/:orderId/mark-packing
 POST /shop-owner/orders/:orderId/ready-for-pickup
 POST /shop-owner/orders/:orderId/cancel
-POST /shop-owner/orders/:orderId/assign-captain
+GET /shop/orders/:orderId/delivery
+GET /shop/delivery-tasks/:taskId
+GET /shop/delivery-tasks/:taskId/tracking
 ```
 
-Captain delivery request:
+Captain task endpoints:
+
+```txt
+GET /captain/tasks
+POST /captain/tasks/:taskId/accept
+POST /captain/tasks/:taskId/reject
+POST /captain/tasks/:taskId/reached-pickup
+POST /captain/tasks/:taskId/picked-up
+POST /captain/tasks/:taskId/reached-drop
+POST /captain/tasks/:taskId/delivered
+POST /captain/tasks/:taskId/failed
+```
+
+Captain location update:
 
 ```json
 {
-  "paymentCollected": true,
-  "collectedAmount": 350,
-  "deliveryProofImage": "qa/delivery-proof/2026-04-26/order-proof.jpg"
+  "latitude": 17.0,
+  "longitude": 78.0,
+  "heading": 120,
+  "speed": 30
 }
+```
+
+Admin captain and delivery endpoints:
+
+```txt
+GET /admin/captains
+GET /admin/captains/:id
+POST /admin/captains/:id/approve
+POST /admin/captains/:id/reject
+POST /admin/captains/:id/block
+POST /admin/captains/:id/unblock
+GET /admin/captains/:id/documents
+GET /admin/captains/:id/deliveries
+GET /admin/captains/:id/earnings
+GET /admin/delivery-tasks
+GET /admin/delivery-tasks/:id
+```
+
+Parcel endpoints:
+
+```txt
+POST /parcels
+GET /parcels/my
+GET /parcels/:id
+POST /parcels/:id/cancel
 ```
 
 ## Upload contract

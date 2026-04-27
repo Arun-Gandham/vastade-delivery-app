@@ -13,7 +13,7 @@ export const useCaptainProfileQuery = () =>
 export const useCaptainOrdersDataQuery = () =>
   useQuery({
     queryKey: queryKeys.captainOrders,
-    queryFn: captainApi.orders,
+    queryFn: captainApi.tasks,
   });
 
 export const useCaptainMutations = () => {
@@ -29,26 +29,32 @@ export const useCaptainMutations = () => {
       onSuccess: () => queryClient.invalidateQueries({ queryKey: queryKeys.captainProfile }),
     }),
     acceptOrder: useMutation({
-      mutationFn: captainApi.acceptOrder,
+      mutationFn: captainApi.acceptTask,
       onSuccess: () => queryClient.invalidateQueries({ queryKey: queryKeys.captainOrders }),
     }),
     rejectOrder: useMutation({
       mutationFn: ({ orderId, reason }: { orderId: string; reason: string }) =>
-        captainApi.rejectOrder(orderId, reason),
+        captainApi.rejectTask(orderId, reason),
+      onSuccess: () => queryClient.invalidateQueries({ queryKey: queryKeys.captainOrders }),
+    }),
+    markReachedPickup: useMutation({
+      mutationFn: captainApi.markReachedPickup,
       onSuccess: () => queryClient.invalidateQueries({ queryKey: queryKeys.captainOrders }),
     }),
     markPickedUp: useMutation({
       mutationFn: captainApi.markPickedUp,
       onSuccess: () => queryClient.invalidateQueries({ queryKey: queryKeys.captainOrders }),
     }),
+    markReachedDrop: useMutation({
+      mutationFn: captainApi.markReachedDrop,
+      onSuccess: () => queryClient.invalidateQueries({ queryKey: queryKeys.captainOrders }),
+    }),
     markDelivered: useMutation({
-      mutationFn: ({
-        orderId,
-        payload,
-      }: {
-        orderId: string;
-        payload: { paymentCollected: boolean; collectedAmount?: number; deliveryProofImage?: string };
-      }) => captainApi.markDelivered(orderId, payload),
+      mutationFn: captainApi.markDelivered,
+      onSuccess: () => queryClient.invalidateQueries({ queryKey: queryKeys.captainOrders }),
+    }),
+    markFailed: useMutation({
+      mutationFn: captainApi.markFailed,
       onSuccess: () => queryClient.invalidateQueries({ queryKey: queryKeys.captainOrders }),
     }),
   };

@@ -1,4 +1,7 @@
 const {
+  CaptainAvailabilityStatus,
+  CaptainRegistrationStatus,
+  CaptainDocumentType,
   AddressType,
   NotificationChannel,
   PaymentMode,
@@ -93,17 +96,109 @@ async function main() {
     create: {
       name: "Pilot Captain",
       mobile: "6666666666",
+      email: "captain@example.com",
       passwordHash: captainPassword,
-      role: UserRole.CAPTAIN,
-      captainProfile: {
-        create: {
-          vehicleType: VehicleType.BIKE,
-          isOnline: true
-        }
-      }
-    },
-    include: { captainProfile: true }
+      role: UserRole.CAPTAIN
+    }
   });
+
+  const captainProfile = await prisma.captain.upsert({
+    where: { userId: captainUser.id },
+    update: {
+      profilePhoto: "qa/captains/profile-photo.jpg",
+      dateOfBirth: new Date("1996-05-15T00:00:00.000Z"),
+      fullAddress: "2-45, Captain Street, Pilot Village",
+      city: "Pilot City",
+      state: "Andhra Pradesh",
+      pincode: "533001",
+      emergencyContactName: "Captain Emergency",
+      emergencyContactPhone: "6666666667",
+      vehicleType: VehicleType.BIKE,
+      vehicleNumber: "AP09AB1234",
+      licenseNumber: "DL-TEST-12345",
+      idProofNumber: "ABCDE1234F",
+      agreementAccepted: true,
+      termsAccepted: true,
+      registrationStatus: CaptainRegistrationStatus.APPROVED,
+      availabilityStatus: CaptainAvailabilityStatus.ONLINE,
+      isOnline: true,
+      isAvailable: true,
+      currentLatitude: 17.385,
+      currentLongitude: 78.4867
+    },
+    create: {
+      userId: captainUser.id,
+      profilePhoto: "qa/captains/profile-photo.jpg",
+      dateOfBirth: new Date("1996-05-15T00:00:00.000Z"),
+      fullAddress: "2-45, Captain Street, Pilot Village",
+      city: "Pilot City",
+      state: "Andhra Pradesh",
+      pincode: "533001",
+      emergencyContactName: "Captain Emergency",
+      emergencyContactPhone: "6666666667",
+      vehicleType: VehicleType.BIKE,
+      vehicleNumber: "AP09AB1234",
+      licenseNumber: "DL-TEST-12345",
+      idProofNumber: "ABCDE1234F",
+      agreementAccepted: true,
+      termsAccepted: true,
+      registrationStatus: CaptainRegistrationStatus.APPROVED,
+      availabilityStatus: CaptainAvailabilityStatus.ONLINE,
+      isOnline: true,
+      isAvailable: true,
+      currentLatitude: 17.385,
+      currentLongitude: 78.4867
+    }
+  });
+
+  await prisma.captainVehicle.upsert({
+    where: { id: "33333333-3333-3333-3333-333333333333" },
+    update: {},
+    create: {
+      id: "33333333-3333-3333-3333-333333333333",
+      captainId: captainProfile.id,
+      vehicleType: VehicleType.BIKE,
+      vehicleNumber: "AP09AB1234",
+      rcDocumentKey: "qa/captains/vehicle-rc.jpg",
+      isPrimary: true
+    }
+  });
+
+  await prisma.captainBankDetail.upsert({
+    where: { id: "44444444-4444-4444-4444-444444444444" },
+    update: {},
+    create: {
+      id: "44444444-4444-4444-4444-444444444444",
+      captainId: captainProfile.id,
+      accountHolderName: "Pilot Captain",
+      accountNumber: "123456789012",
+      ifscCode: "HDFC0001234",
+      upiId: "captain@upi",
+      isPrimary: true
+    }
+  });
+
+  for (const document of [
+    ["55555555-5555-5555-5555-555555555551", CaptainDocumentType.PROFILE_PHOTO, "qa/captains/profile-photo.jpg"],
+    ["55555555-5555-5555-5555-555555555552", CaptainDocumentType.VEHICLE_RC, "qa/captains/vehicle-rc.jpg"],
+    ["55555555-5555-5555-5555-555555555553", CaptainDocumentType.DRIVING_LICENSE_FRONT, "qa/captains/license-front.jpg"],
+    ["55555555-5555-5555-5555-555555555554", CaptainDocumentType.DRIVING_LICENSE_BACK, "qa/captains/license-back.jpg"],
+    ["55555555-5555-5555-5555-555555555555", CaptainDocumentType.ID_PROOF_FRONT, "qa/captains/id-front.jpg"],
+    ["55555555-5555-5555-5555-555555555556", CaptainDocumentType.ID_PROOF_BACK, "qa/captains/id-back.jpg"]
+  ]) {
+    await prisma.captainDocument.upsert({
+      where: { id: document[0] },
+      update: {},
+      create: {
+        id: document[0],
+        captainId: captainProfile.id,
+        documentType: document[1],
+        fileKey: document[2],
+        isVerified: true,
+        verifiedAt: new Date()
+      }
+    });
+  }
 
   const category = await prisma.category.upsert({
     where: { slug: "vegetables" },

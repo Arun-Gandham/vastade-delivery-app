@@ -39,9 +39,11 @@ CAPTAIN       -> /captain
 | View Own Orders  |      Yes | Assigned only |   Shop orders only |   All |         All |
 | Manage Products  |       No |            No | Limited if allowed |   Yes |         Yes |
 | Manage Inventory |       No |            No |           Own shop |   Yes |         Yes |
-| Assign Captain   |       No |            No |    Own shop orders |   Yes |         Yes |
+| Assign Captain   |       No |            No |                 No | System-driven task assignment plus admin review | System-driven task assignment plus admin review |
 | Deliver Order    |       No | Assigned only |                 No |    No |          No |
 | Reports          |       No |            No |           Own shop |   All |         All |
+| Verify Captains  |       No |            No |                 No |   Yes |         Yes |
+| Track Delivery   | Own orders only | Assigned only | Own orders only |   All |         All |
 
 ---
 
@@ -62,8 +64,11 @@ Inventory
 Cart
 Order
 Shop order management
-Manual captain assignment
+Captain self-registration
+Admin captain verification
+Generic delivery task lifecycle
 Captain delivery flow
+Parcel delivery flow
 COD payment
 Basic admin dashboard
 ```
@@ -76,9 +81,9 @@ Subscription
 Advanced offers
 AI recommendation
 Multiple payment gateways
-Live map tracking
-Auto captain assignment
+Live map tracking polish
 Complex settlement
+Dedicated captain app split can come later because APIs are already client-agnostic
 ```
 
 ---
@@ -101,7 +106,7 @@ Complex settlement
 11. Order placement with transaction
 12. Shop order status APIs
 13. Captain module
-14. Delivery assignment APIs
+14. Delivery task and task-offer APIs
 15. Payment module basic COD
 16. Notification queue
 17. Dashboard APIs

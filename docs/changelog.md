@@ -218,3 +218,139 @@ Admin management pages for shops, products, and coupons were shifted toward a cl
 ### Verification
 - Frontend build succeeded after adding the dedicated routes and mirrored super-admin pages.
 - Management flows now keep list pages cleaner and preserve the super-admin URL space.
+
+## 2026-04-27 - Captain self-registration and generic delivery-task architecture
+
+### Type
+Backend and documentation
+
+### Status
+Implemented
+
+### Summary
+The backend design was moved away from admin/shop-created captains and toward captain self-registration with admin verification. Delivery orchestration now has a generic `delivery_tasks` layer that can support grocery, parcel, and future logistics services through one captain engine.
+
+### Updated docs
+- README.md
+- backend/README.md
+- docs/backend/01-backend-overview-stack.md
+- docs/backend/02-database-schema.md
+- docs/backend/03-backend-architecture-standards.md
+- docs/backend/04-infrastructure-security-env.md
+- docs/backend/05-transactions-testing-swagger-deployment.md
+- docs/product/01-product-overview.md
+- docs/product/02-roles-permissions-mvp-scope.md
+- docs/product/04-api-contracts.md
+- docs/product/05-business-rules-statuses.md
+- docs/product/06-change-requests.md
+
+### Files changed
+- backend/prisma/schema.prisma
+- backend/prisma/seed.js
+- backend/src/modules/captains/*
+- backend/src/modules/delivery-tasks/*
+- backend/src/modules/orders/order.service.ts
+- backend/src/routes/index.ts
+- backend/src/core/utils/geo.ts
+- backend/src/realtime/socket-gateway.ts
+- backend/src/config/env.ts
+- backend/src/constants/error-codes.ts
+
+### Verification
+- Backend TypeScript build succeeded after the captain and delivery-task refactor.
+- Prisma client was regenerated against the updated schema using a no-engine generation pass.
+
+## 2026-04-27 - Delivery-task documentation alignment
+
+### Type
+Documentation
+
+### Status
+Implemented
+
+### Summary
+The remaining current markdown files were aligned with the captain self-registration and generic delivery-task design. Older references to shop-side captain creation, manual assign-captain actions, and direct captain-order-only APIs were removed from the active docs set.
+
+### Updated docs
+- README.md
+- docs/README.md
+- docs/product/README.md
+- docs/product/02-roles-permissions-mvp-scope.md
+- docs/product/03-user-flows.md
+- docs/product/05-business-rules-statuses.md
+- docs/frontend/04-routes-pages.md
+- docs/frontend/05-api-integration.md
+- docs/frontend/06-state-forms-validation.md
+- docs/frontend/08-responsive-performance-seo-accessibility.md
+- docs/frontend/09-testing-env-deployment-development-order.md
+- frontend/README.md
+
+### Verification
+- Active docs now describe captain self-registration, admin-only verification, parcel support, delivery-task APIs, and generic dispatch behavior consistently.
+
+## 2026-04-27 - Permission-noise compatibility cleanup
+
+### Type
+Frontend compatibility and behavior alignment
+
+### Status
+Implemented
+
+### Summary
+Shop-owner order detail screens no longer call admin-only captain availability endpoints, and captain availability/location actions now point at the current captain APIs. This removes avoidable 403 responses caused by stale client integrations after the captain and dispatch refactor.
+
+### Updated files
+- frontend/src/features/captain/captain.api.ts
+- frontend/src/app/(shop-owner)/shop-owner/shops/[shopId]/orders/[orderId]/page.tsx
+- frontend/src/app/(admin)/admin/orders/[orderId]/page.tsx
+
+### Verification
+- Frontend compilation and type-checking succeeded.
+- Remaining frontend build failure is unrelated and currently tied to the existing `/captain/notifications` page resolution issue.
+
+## 2026-04-27 - Captain task-page separation
+
+### Type
+Frontend and documentation
+
+### Status
+Implemented
+
+### Summary
+Captain pages were separated from the old shared order flow and moved onto captain-specific delivery-task rendering and captain-task actions. This keeps captain login and captain work surfaces aligned with the new `delivery_tasks` backend model.
+
+### Updated files
+- frontend/src/types/domain.ts
+- frontend/src/features/captain/captain.api.ts
+- frontend/src/features/captain/captain.hooks.ts
+- frontend/src/components/captain/captain-task-card.tsx
+- frontend/src/app/(captain)/captain/page.tsx
+- frontend/src/app/(captain)/captain/orders/page.tsx
+- frontend/src/app/(captain)/captain/orders/[orderId]/page.tsx
+- docs/frontend/04-routes-pages.md
+- docs/frontend/05-api-integration.md
+- docs/frontend/CHANGELOG.md
+
+### Verification
+- Captain pages no longer depend on customer order-card assumptions or old captain order-action payloads.
+
+## 2026-04-27 - Captain API authorization and schema sync fix
+
+### Type
+Backend and local database alignment
+
+### Status
+Implemented
+
+### Summary
+Captain APIs were being blocked because a customer-only delivery tracking router had previously been mounted too broadly. After narrowing that router to route-level guards, the remaining captain failures were caused by local MySQL schema drift. The local database was synced to the current Prisma schema and reseeded.
+
+### Updated files
+- backend/src/modules/delivery-tasks/delivery-task.routes.ts
+- backend/src/core/middleware/auth-middleware.ts
+
+### Verification
+- `POST /api/v1/auth/login` with the seeded captain succeeds.
+- `GET /api/v1/captain/me` returns `200`.
+- `GET /api/v1/captain/tasks` returns `200`.
+- `GET /api/v1/notifications` returns `200`.

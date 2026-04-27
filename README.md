@@ -5,7 +5,7 @@ Quick Commerce is a full-stack grocery ordering MVP with a Next.js frontend, an 
 ## What is in this repo
 
 - `frontend/`: Next.js customer, captain, shop-owner, admin, and super-admin app
-- `backend/`: Express API, Prisma schema, auth, catalog, orders, uploads, and dashboards
+- `backend/`: Express API, Prisma schema, auth, catalog, orders, generic delivery tasks, parcels, uploads, and dashboards
 - `docs/`: current product, backend, and frontend implementation reference
 
 ## Current implementation highlights
@@ -16,9 +16,40 @@ Quick Commerce is a full-stack grocery ordering MVP with a Next.js frontend, an 
 - Shared enterprise UI chrome for dashboard roles through common sidebar, topbar, and floating mobile nav components
 - Shared route-level dashboard layouts for admin and super-admin so sidebar and topbar persist while only page content changes
 - Admin and super-admin management sections now favor list-only screens with dedicated create and edit pages for categories, shops, products, and coupons
+- Captain onboarding is modeled as self-registration plus admin verification
+- Delivery orchestration now runs through generic `delivery_tasks` for grocery, parcel, and future logistics services
 - Direct-to-S3 image upload flow with backend-issued presigned `PUT` URLs
 - S3 object key storage in the database with resolved browser-safe `imageUrl` values in API responses
 - Support for both public buckets and private buckets with signed read URLs
+
+## Captain and logistics architecture
+
+Important business rules:
+
+- captains are not created by admin or shop users
+- captains register from a public registration flow or a future dedicated captain web or mobile app
+- admin can review, approve, reject, block, unblock, and audit captains
+- shop users can only view assigned delivery context for their own orders
+- customer and shop tracking should read from `delivery_tasks`, not direct captain-order coupling
+
+Dispatch model:
+
+```txt
+Grocery Order ─┐
+Parcel Order  ─┼── Delivery Task ─── Captain
+Future Orders ─┘
+```
+
+Recommended client split over time:
+
+```txt
+/backend
+/customer-web
+/shop-admin-web
+/captain-web or mobile captain app
+```
+
+The repo currently keeps one Next.js frontend, but the backend APIs and docs are now designed so a dedicated captain client can be separated later without changing the delivery contract.
 
 ## Image handling contract
 

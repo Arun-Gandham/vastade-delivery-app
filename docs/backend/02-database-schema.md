@@ -1,6 +1,29 @@
-# Database Entities
+# Database Schema
 
-# 7. Database Entities
+This document reflects the current backend design direction after the captain and logistics refactor.
+
+## Core principle
+
+Captains are not created by admin or shop panels.
+
+They register themselves and are later reviewed by admin.
+
+Delivery execution is no longer modeled only as:
+
+```txt
+Order -> Captain
+```
+
+It is modeled as:
+
+```txt
+Grocery Order
+Parcel Order
+Future Food / Medicine / Custom Jobs
+        -> Delivery Task -> Captain
+```
+
+## Main entities
 
 ## users
 
@@ -10,244 +33,12 @@ name VARCHAR(150)
 mobile VARCHAR(20) UNIQUE
 email VARCHAR(150) UNIQUE NULL
 passwordHash TEXT NULL
-role ENUM
+role ENUM SUPER_ADMIN, ADMIN, SHOP_OWNER, STORE_MANAGER, CUSTOMER, CAPTAIN
 profileImage TEXT NULL
-isMobileVerified BOOLEAN DEFAULT false
-isEmailVerified BOOLEAN DEFAULT false
-isActive BOOLEAN DEFAULT true
+isMobileVerified BOOLEAN
+isEmailVerified BOOLEAN
+isActive BOOLEAN
 lastLoginAt TIMESTAMP NULL
-createdAt TIMESTAMP
-updatedAt TIMESTAMP
-```
-
-## user_sessions
-
-```txt
-id UUID PK
-userId UUID FK users.id
-refreshToken TEXT
-deviceId TEXT NULL
-deviceType VARCHAR(50) NULL
-fcmToken TEXT NULL
-ipAddress TEXT NULL
-userAgent TEXT NULL
-expiresAt TIMESTAMP
-revokedAt TIMESTAMP NULL
-createdAt TIMESTAMP
-```
-
-## customer_addresses
-
-```txt
-id UUID PK
-customerId UUID FK users.id
-fullName VARCHAR(150)
-mobile VARCHAR(20)
-houseNo TEXT
-street TEXT
-landmark TEXT
-village VARCHAR(150)
-mandal VARCHAR(150) NULL
-district VARCHAR(150) NULL
-state VARCHAR(150) NULL
-pincode VARCHAR(10)
-latitude DECIMAL(10,7) NULL
-longitude DECIMAL(10,7) NULL
-addressType ENUM HOME, WORK, OTHER
-isDefault BOOLEAN DEFAULT false
-createdAt TIMESTAMP
-updatedAt TIMESTAMP
-```
-
-## shops
-
-```txt
-id UUID PK
-ownerId UUID FK users.id
-name VARCHAR(200)
-mobile VARCHAR(20)
-email VARCHAR(150) NULL
-licenseNumber VARCHAR(100) NULL
-gstNumber VARCHAR(100) NULL
-address TEXT
-village VARCHAR(150)
-pincode VARCHAR(10)
-latitude DECIMAL(10,7) NULL
-longitude DECIMAL(10,7) NULL
-openingTime TIME NULL
-closingTime TIME NULL
-isOpen BOOLEAN DEFAULT true
-isActive BOOLEAN DEFAULT true
-createdAt TIMESTAMP
-updatedAt TIMESTAMP
-```
-
-## shop_staff
-
-```txt
-id UUID PK
-shopId UUID FK shops.id
-userId UUID FK users.id
-role ENUM SHOP_OWNER, STORE_MANAGER
-isActive BOOLEAN DEFAULT true
-createdAt TIMESTAMP
-updatedAt TIMESTAMP
-```
-
-## categories
-
-```txt
-id UUID PK
-name VARCHAR(150)
-slug VARCHAR(150) UNIQUE
-imageUrl TEXT NULL
-parentId UUID NULL FK categories.id
-sortOrder INT DEFAULT 0
-isActive BOOLEAN DEFAULT true
-createdAt TIMESTAMP
-updatedAt TIMESTAMP
-```
-
-## products
-
-```txt
-id UUID PK
-categoryId UUID FK categories.id
-name VARCHAR(200)
-slug VARCHAR(200) UNIQUE
-description TEXT NULL
-brand VARCHAR(150) NULL
-unit VARCHAR(50)
-unitValue DECIMAL(10,2) NULL
-mrp DECIMAL(10,2)
-sellingPrice DECIMAL(10,2)
-barcode VARCHAR(100) NULL
-imageUrl TEXT NULL
-isActive BOOLEAN DEFAULT true
-createdAt TIMESTAMP
-updatedAt TIMESTAMP
-```
-
-## product_images
-
-```txt
-id UUID PK
-productId UUID FK products.id
-imageUrl TEXT
-sortOrder INT DEFAULT 0
-createdAt TIMESTAMP
-```
-
-## shop_inventory
-
-```txt
-id UUID PK
-shopId UUID FK shops.id
-productId UUID FK products.id
-availableStock INT DEFAULT 0
-reservedStock INT DEFAULT 0
-soldStock INT DEFAULT 0
-damagedStock INT DEFAULT 0
-lowStockAlert INT DEFAULT 5
-isAvailable BOOLEAN DEFAULT true
-createdAt TIMESTAMP
-updatedAt TIMESTAMP
-UNIQUE(shopId, productId)
-```
-
-## carts
-
-```txt
-id UUID PK
-customerId UUID FK users.id
-shopId UUID FK shops.id
-createdAt TIMESTAMP
-updatedAt TIMESTAMP
-```
-
-## cart_items
-
-```txt
-id UUID PK
-cartId UUID FK carts.id
-productId UUID FK products.id
-quantity INT
-unitPrice DECIMAL(10,2)
-totalPrice DECIMAL(10,2)
-createdAt TIMESTAMP
-updatedAt TIMESTAMP
-UNIQUE(cartId, productId)
-```
-
-## orders
-
-```txt
-id UUID PK
-orderNumber VARCHAR(50) UNIQUE
-customerId UUID FK users.id
-shopId UUID FK shops.id
-addressId UUID FK customer_addresses.id
-captainId UUID FK users.id NULL
-status ENUM
-paymentMode ENUM
-paymentStatus ENUM
-subtotal DECIMAL(10,2)
-deliveryFee DECIMAL(10,2)
-platformFee DECIMAL(10,2) DEFAULT 0
-discount DECIMAL(10,2) DEFAULT 0
-totalAmount DECIMAL(10,2)
-codAmount DECIMAL(10,2) DEFAULT 0
-customerNotes TEXT NULL
-cancelReason TEXT NULL
-placedAt TIMESTAMP
-confirmedAt TIMESTAMP NULL
-packedAt TIMESTAMP NULL
-pickedUpAt TIMESTAMP NULL
-deliveredAt TIMESTAMP NULL
-cancelledAt TIMESTAMP NULL
-createdAt TIMESTAMP
-updatedAt TIMESTAMP
-```
-
-## order_items
-
-```txt
-id UUID PK
-orderId UUID FK orders.id
-productId UUID FK products.id
-productName VARCHAR(200)
-productImage TEXT NULL
-quantity INT
-unitPrice DECIMAL(10,2)
-totalPrice DECIMAL(10,2)
-createdAt TIMESTAMP
-```
-
-## order_status_history
-
-```txt
-id UUID PK
-orderId UUID FK orders.id
-oldStatus VARCHAR(50) NULL
-newStatus VARCHAR(50)
-changedBy UUID FK users.id NULL
-remarks TEXT NULL
-createdAt TIMESTAMP
-```
-
-## payments
-
-```txt
-id UUID PK
-orderId UUID FK orders.id
-paymentMode ENUM COD, UPI_MANUAL, RAZORPAY
-paymentStatus ENUM PENDING, PAID, FAILED, REFUNDED, COD_PENDING, COD_COLLECTED
-provider VARCHAR(100) NULL
-providerOrderId TEXT NULL
-providerPaymentId TEXT NULL
-providerSignature TEXT NULL
-amount DECIMAL(10,2)
-paidAt TIMESTAMP NULL
 createdAt TIMESTAMP
 updatedAt TIMESTAMP
 ```
@@ -256,109 +47,239 @@ updatedAt TIMESTAMP
 
 ```txt
 id UUID PK
-userId UUID FK users.id
-vehicleType ENUM BIKE, CYCLE, AUTO, WALKING
+userId UUID FK users.id UNIQUE
+profilePhoto TEXT NULL
+dateOfBirth TIMESTAMP NULL
+fullAddress TEXT NULL
+city VARCHAR(150) NULL
+state VARCHAR(150) NULL
+pincode VARCHAR(10) NULL
+emergencyContactName VARCHAR(150) NULL
+emergencyContactPhone VARCHAR(20) NULL
+vehicleType ENUM BIKE, SCOOTER, CYCLE, CAR, AUTO, WALKING
 vehicleNumber VARCHAR(50) NULL
 licenseNumber VARCHAR(100) NULL
-isOnline BOOLEAN DEFAULT false
-isAvailable BOOLEAN DEFAULT true
+idProofNumber VARCHAR(100) NULL
+agreementAccepted BOOLEAN
+termsAccepted BOOLEAN
+registrationStatus ENUM SUBMITTED, PENDING_VERIFICATION, APPROVED, REJECTED, BLOCKED
+availabilityStatus ENUM OFFLINE, ONLINE, BUSY
+verifiedAt TIMESTAMP NULL
+approvalNotes TEXT NULL
+rejectionReason TEXT NULL
+blockedAt TIMESTAMP NULL
+blockedReason TEXT NULL
+isOnline BOOLEAN
+isAvailable BOOLEAN
 currentLatitude DECIMAL(10,7) NULL
 currentLongitude DECIMAL(10,7) NULL
-cashInHand DECIMAL(10,2) DEFAULT 0
+cashInHand DECIMAL(10,2)
+rating DECIMAL(4,2) NULL
+totalDeliveries INT
 createdAt TIMESTAMP
 updatedAt TIMESTAMP
 ```
 
-## delivery_assignments
+## captain_documents
 
 ```txt
 id UUID PK
-orderId UUID FK orders.id
-captainId UUID FK users.id
-assignedBy UUID FK users.id NULL
-status ENUM ASSIGNED, ACCEPTED, REJECTED, PICKED_UP, DELIVERED, CANCELLED
-assignedAt TIMESTAMP
-acceptedAt TIMESTAMP NULL
+captainId UUID FK captains.id
+documentType ENUM PROFILE_PHOTO, VEHICLE_RC, DRIVING_LICENSE_FRONT, DRIVING_LICENSE_BACK, ID_PROOF_FRONT, ID_PROOF_BACK, AGREEMENT, OTHER
+documentNumber VARCHAR(100) NULL
+fileKey TEXT
+fileUrl TEXT NULL
+isVerified BOOLEAN
+verifiedAt TIMESTAMP NULL
+rejectionReason TEXT NULL
+createdAt TIMESTAMP
+updatedAt TIMESTAMP
+```
+
+## captain_vehicles
+
+```txt
+id UUID PK
+captainId UUID FK captains.id
+vehicleType ENUM BIKE, SCOOTER, CYCLE, CAR, AUTO, WALKING
+vehicleNumber VARCHAR(50)
+rcDocumentKey TEXT NULL
+isPrimary BOOLEAN
+createdAt TIMESTAMP
+updatedAt TIMESTAMP
+```
+
+## captain_bank_details
+
+```txt
+id UUID PK
+captainId UUID FK captains.id
+accountHolderName VARCHAR(150)
+accountNumber VARCHAR(50)
+ifscCode VARCHAR(20)
+upiId VARCHAR(100) NULL
+isPrimary BOOLEAN
+createdAt TIMESTAMP
+updatedAt TIMESTAMP
+```
+
+## captain_verification_logs
+
+```txt
+id UUID PK
+captainId UUID FK captains.id
+action ENUM SUBMITTED, PENDING_VERIFICATION, APPROVED, REJECTED, BLOCKED
+remarks TEXT NULL
+performedByUserId UUID NULL
+createdAt TIMESTAMP
+```
+
+## delivery_tasks
+
+Generic logistics table used for grocery, parcel, and future delivery products.
+
+```txt
+id UUID PK
+taskType ENUM GROCERY, PARCEL, FOOD, MEDICINE, CUSTOM
+referenceId UUID / string
+referenceTable VARCHAR(100)
+shopId UUID NULL
+customerId UUID NULL
+captainId UUID FK captains.id NULL
+status ENUM CREATED, SEARCHING_CAPTAIN, OFFERED_TO_CAPTAINS, ACCEPTED, CAPTAIN_REACHED_PICKUP, PICKED_UP, CAPTAIN_REACHED_DROP, DELIVERED, CANCELLED, FAILED
+pickupName VARCHAR(150) NULL
+pickupPhone VARCHAR(20) NULL
+pickupAddress TEXT
+pickupLatitude DECIMAL(10,7) NULL
+pickupLongitude DECIMAL(10,7) NULL
+dropName VARCHAR(150) NULL
+dropPhone VARCHAR(20) NULL
+dropAddress TEXT
+dropLatitude DECIMAL(10,7) NULL
+dropLongitude DECIMAL(10,7) NULL
+deliveryFee DECIMAL(10,2)
+distanceKm DECIMAL(10,2) NULL
+estimatedPickupAt TIMESTAMP NULL
+estimatedDeliveryAt TIMESTAMP NULL
+assignedAt TIMESTAMP NULL
 pickedUpAt TIMESTAMP NULL
 deliveredAt TIMESTAMP NULL
+cancelledAt TIMESTAMP NULL
+failureReason TEXT NULL
 createdAt TIMESTAMP
 updatedAt TIMESTAMP
 ```
 
-## stock_movements
+## captain_task_offers
 
 ```txt
 id UUID PK
-shopId UUID FK shops.id
-productId UUID FK products.id
-movementType ENUM
-quantity INT
-beforeStock INT
-afterStock INT
-referenceType VARCHAR(50) NULL
-referenceId UUID NULL
-remarks TEXT NULL
-createdBy UUID FK users.id NULL
-createdAt TIMESTAMP
-```
-
-Movement types:
-
-```txt
-STOCK_ADDED
-STOCK_RESERVED
-STOCK_RELEASED
-STOCK_SOLD
-STOCK_DAMAGED
-STOCK_ADJUSTED
-```
-
-## coupons
-
-```txt
-id UUID PK
-code VARCHAR(50) UNIQUE
-description TEXT NULL
-discountType ENUM PERCENTAGE, FLAT
-value DECIMAL(10,2)
-minOrderAmount DECIMAL(10,2) DEFAULT 0
-maxDiscount DECIMAL(10,2) NULL
-usageLimit INT NULL
-usedCount INT DEFAULT 0
-validFrom TIMESTAMP
-validTo TIMESTAMP
-isActive BOOLEAN DEFAULT true
+deliveryTaskId UUID FK delivery_tasks.id
+captainId UUID FK captains.id
+status ENUM SENT, ACCEPTED, REJECTED, EXPIRED, CANCELLED
+distanceToPickupKm DECIMAL(10,2) NULL
+pickupToDropKm DECIMAL(10,2) NULL
+estimatedEarning DECIMAL(10,2) NULL
+offeredAt TIMESTAMP
+respondedAt TIMESTAMP NULL
+expiresAt TIMESTAMP NULL
+rejectionReason TEXT NULL
 createdAt TIMESTAMP
 updatedAt TIMESTAMP
+UNIQUE(deliveryTaskId, captainId)
 ```
 
-## notifications
+## captain_locations
 
 ```txt
 id UUID PK
-userId UUID FK users.id
-channel ENUM PUSH, SMS, WHATSAPP, EMAIL, IN_APP
+captainId UUID FK captains.id
+latitude DECIMAL(10,7)
+longitude DECIMAL(10,7)
+heading DECIMAL(10,2) NULL
+speed DECIMAL(10,2) NULL
+createdAt TIMESTAMP
+```
+
+## captain_earnings
+
+```txt
+id UUID PK
+captainId UUID FK captains.id
+deliveryTaskId UUID FK delivery_tasks.id
+amount DECIMAL(10,2)
+status VARCHAR(50)
+settledAt TIMESTAMP NULL
+createdAt TIMESTAMP
+```
+
+## captain_notifications
+
+```txt
+id UUID PK
+captainId UUID FK captains.id
 title VARCHAR(200)
 message TEXT
-payload JSONB NULL
-isRead BOOLEAN DEFAULT false
-sentAt TIMESTAMP NULL
+payload JSON NULL
+isRead BOOLEAN
 createdAt TIMESTAMP
 ```
 
-## audit_logs
+## parcel_orders
 
 ```txt
 id UUID PK
-userId UUID FK users.id NULL
-action VARCHAR(150)
-entityName VARCHAR(150)
-entityId UUID NULL
-oldValue JSONB NULL
-newValue JSONB NULL
-ipAddress TEXT NULL
-userAgent TEXT NULL
+customerId UUID FK users.id
+senderName VARCHAR(150)
+senderPhone VARCHAR(20)
+pickupAddress TEXT
+pickupLatitude DECIMAL(10,7) NULL
+pickupLongitude DECIMAL(10,7) NULL
+receiverName VARCHAR(150)
+receiverPhone VARCHAR(20)
+dropAddress TEXT
+dropLatitude DECIMAL(10,7) NULL
+dropLongitude DECIMAL(10,7) NULL
+packageDetails TEXT NULL
+status VARCHAR(50)
+deliveryFee DECIMAL(10,2)
 createdAt TIMESTAMP
+updatedAt TIMESTAMP
 ```
 
----
+## Legacy grocery entities still used
+
+These remain active and continue to power the grocery MVP:
+
+```txt
+shops
+categories
+products
+shop_inventory
+carts
+cart_items
+orders
+order_items
+order_status_history
+payments
+notifications
+audit_logs
+```
+
+## Relationship summary
+
+```txt
+User 1 -> 1 Captain
+Captain 1 -> many CaptainDocuments
+Captain 1 -> many CaptainVehicles
+Captain 1 -> many CaptainBankDetails
+Captain 1 -> many CaptainVerificationLogs
+Captain 1 -> many CaptainLocations
+Captain 1 -> many CaptainTaskOffers
+Captain 1 -> many CaptainEarnings
+Captain 1 -> many CaptainNotifications
+DeliveryTask 1 -> many CaptainTaskOffers
+DeliveryTask 1 -> many CaptainEarnings
+ParcelOrder 1 -> 1 DeliveryTask via referenceId/referenceTable
+Order 1 -> 1 DeliveryTask via referenceId/referenceTable
+```

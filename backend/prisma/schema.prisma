@@ -61,9 +61,65 @@ enum DeliveryAssignmentStatus {
 
 enum VehicleType {
   BIKE
+  SCOOTER
   CYCLE
+  CAR
   AUTO
   WALKING
+}
+
+enum CaptainRegistrationStatus {
+  SUBMITTED
+  PENDING_VERIFICATION
+  APPROVED
+  REJECTED
+  BLOCKED
+}
+
+enum CaptainAvailabilityStatus {
+  OFFLINE
+  ONLINE
+  BUSY
+}
+
+enum CaptainDocumentType {
+  PROFILE_PHOTO
+  VEHICLE_RC
+  DRIVING_LICENSE_FRONT
+  DRIVING_LICENSE_BACK
+  ID_PROOF_FRONT
+  ID_PROOF_BACK
+  AGREEMENT
+  OTHER
+}
+
+enum DeliveryTaskType {
+  GROCERY
+  PARCEL
+  FOOD
+  MEDICINE
+  CUSTOM
+}
+
+enum DeliveryTaskStatus {
+  CREATED
+  SEARCHING_CAPTAIN
+  OFFERED_TO_CAPTAINS
+  ACCEPTED
+  CAPTAIN_REACHED_PICKUP
+  PICKED_UP
+  CAPTAIN_REACHED_DROP
+  DELIVERED
+  CANCELLED
+  FAILED
+}
+
+enum CaptainTaskOfferStatus {
+  SENT
+  ACCEPTED
+  REJECTED
+  EXPIRED
+  CANCELLED
 }
 
 enum DiscountType {
@@ -113,6 +169,7 @@ model User {
   notifications     Notification[]
   deliveryActions   DeliveryAssignment[] @relation("AssignmentCaptain")
   auditLogs         AuditLog[]
+  parcelOrders      ParcelOrder[]        @relation("ParcelCustomer")
 }
 
 model UserSession {
@@ -367,17 +424,206 @@ model Payment {
 model Captain {
   id               String      @id @default(uuid())
   userId           String      @unique
+  profilePhoto     String?
+  dateOfBirth      DateTime?
+  fullAddress      String?
+  city             String?     @db.VarChar(150)
+  state            String?     @db.VarChar(150)
+  pincode          String?     @db.VarChar(10)
+  emergencyContactName  String? @db.VarChar(150)
+  emergencyContactPhone String? @db.VarChar(20)
   vehicleType      VehicleType
   vehicleNumber    String?     @db.VarChar(50)
   licenseNumber    String?     @db.VarChar(100)
+  idProofNumber    String?     @db.VarChar(100)
+  agreementAccepted Boolean    @default(false)
+  termsAccepted     Boolean    @default(false)
+  registrationStatus CaptainRegistrationStatus @default(SUBMITTED)
+  availabilityStatus CaptainAvailabilityStatus @default(OFFLINE)
+  verifiedAt       DateTime?
+  approvalNotes    String?
+  rejectionReason  String?
+  blockedAt        DateTime?
+  blockedReason    String?
   isOnline         Boolean     @default(false)
   isAvailable      Boolean     @default(true)
   currentLatitude  Decimal?    @db.Decimal(10, 7)
   currentLongitude Decimal?    @db.Decimal(10, 7)
   cashInHand       Decimal     @default(0) @db.Decimal(10, 2)
+  rating           Decimal?    @db.Decimal(4, 2)
+  totalDeliveries  Int         @default(0)
   createdAt        DateTime    @default(now())
   updatedAt        DateTime    @updatedAt
   user             User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  documents        CaptainDocument[]
+  vehicles         CaptainVehicle[]
+  bankDetails      CaptainBankDetail[]
+  verificationLogs CaptainVerificationLog[]
+  deliveryTasks    DeliveryTask[]
+  locations        CaptainLocation[]
+  taskOffers       CaptainTaskOffer[]
+  earnings         CaptainEarning[]
+  captainNotifications CaptainNotification[]
+}
+
+model CaptainDocument {
+  id          String              @id @default(uuid())
+  captainId   String
+  documentType CaptainDocumentType
+  documentNumber String?          @db.VarChar(100)
+  fileKey     String
+  fileUrl     String?
+  isVerified  Boolean             @default(false)
+  verifiedAt  DateTime?
+  rejectionReason String?
+  createdAt   DateTime            @default(now())
+  updatedAt   DateTime            @updatedAt
+  captain     Captain             @relation(fields: [captainId], references: [id], onDelete: Cascade)
+}
+
+model CaptainVehicle {
+  id             String      @id @default(uuid())
+  captainId      String
+  vehicleType    VehicleType
+  vehicleNumber  String      @db.VarChar(50)
+  rcDocumentKey  String?
+  isPrimary      Boolean     @default(true)
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
+  captain        Captain     @relation(fields: [captainId], references: [id], onDelete: Cascade)
+}
+
+model CaptainBankDetail {
+  id                  String    @id @default(uuid())
+  captainId           String
+  accountHolderName   String    @db.VarChar(150)
+  accountNumber       String    @db.VarChar(50)
+  ifscCode            String    @db.VarChar(20)
+  upiId               String?   @db.VarChar(100)
+  isPrimary           Boolean   @default(true)
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+  captain             Captain   @relation(fields: [captainId], references: [id], onDelete: Cascade)
+}
+
+model CaptainVerificationLog {
+  id              String                    @id @default(uuid())
+  captainId       String
+  action          CaptainRegistrationStatus
+  remarks         String?
+  performedByUserId String?
+  createdAt       DateTime                  @default(now())
+  captain         Captain                   @relation(fields: [captainId], references: [id], onDelete: Cascade)
+}
+
+model DeliveryTask {
+  id                    String               @id @default(uuid())
+  taskType              DeliveryTaskType
+  referenceId           String
+  referenceTable        String               @db.VarChar(100)
+  shopId                String?
+  customerId            String?
+  captainId             String?
+  status                DeliveryTaskStatus   @default(CREATED)
+  pickupName            String?              @db.VarChar(150)
+  pickupPhone           String?              @db.VarChar(20)
+  pickupAddress         String
+  pickupLatitude        Decimal?             @db.Decimal(10, 7)
+  pickupLongitude       Decimal?             @db.Decimal(10, 7)
+  dropName              String?              @db.VarChar(150)
+  dropPhone             String?              @db.VarChar(20)
+  dropAddress           String
+  dropLatitude          Decimal?             @db.Decimal(10, 7)
+  dropLongitude         Decimal?             @db.Decimal(10, 7)
+  deliveryFee           Decimal              @default(0) @db.Decimal(10, 2)
+  distanceKm            Decimal?             @db.Decimal(10, 2)
+  estimatedPickupAt     DateTime?
+  estimatedDeliveryAt   DateTime?
+  assignedAt            DateTime?
+  pickedUpAt            DateTime?
+  deliveredAt           DateTime?
+  cancelledAt           DateTime?
+  failureReason         String?
+  createdAt             DateTime             @default(now())
+  updatedAt             DateTime             @updatedAt
+  captain               Captain?             @relation(fields: [captainId], references: [id], onDelete: SetNull)
+  offers                CaptainTaskOffer[]
+  earnings              CaptainEarning[]
+}
+
+model CaptainLocation {
+  id          String    @id @default(uuid())
+  captainId   String
+  latitude    Decimal   @db.Decimal(10, 7)
+  longitude   Decimal   @db.Decimal(10, 7)
+  heading     Decimal?  @db.Decimal(10, 2)
+  speed       Decimal?  @db.Decimal(10, 2)
+  createdAt   DateTime  @default(now())
+  captain     Captain   @relation(fields: [captainId], references: [id], onDelete: Cascade)
+}
+
+model CaptainTaskOffer {
+  id                   String                 @id @default(uuid())
+  deliveryTaskId       String
+  captainId            String
+  status               CaptainTaskOfferStatus @default(SENT)
+  distanceToPickupKm   Decimal?               @db.Decimal(10, 2)
+  pickupToDropKm       Decimal?               @db.Decimal(10, 2)
+  estimatedEarning     Decimal?               @db.Decimal(10, 2)
+  offeredAt            DateTime               @default(now())
+  respondedAt          DateTime?
+  expiresAt            DateTime?
+  rejectionReason      String?
+  createdAt            DateTime               @default(now())
+  updatedAt            DateTime               @updatedAt
+  deliveryTask         DeliveryTask           @relation(fields: [deliveryTaskId], references: [id], onDelete: Cascade)
+  captain              Captain                @relation(fields: [captainId], references: [id], onDelete: Cascade)
+
+  @@unique([deliveryTaskId, captainId])
+}
+
+model CaptainEarning {
+  id              String     @id @default(uuid())
+  captainId       String
+  deliveryTaskId  String
+  amount          Decimal    @db.Decimal(10, 2)
+  status          String     @db.VarChar(50)
+  settledAt       DateTime?
+  createdAt       DateTime   @default(now())
+  captain         Captain    @relation(fields: [captainId], references: [id], onDelete: Cascade)
+  deliveryTask    DeliveryTask @relation(fields: [deliveryTaskId], references: [id], onDelete: Cascade)
+}
+
+model CaptainNotification {
+  id             String    @id @default(uuid())
+  captainId      String
+  title          String    @db.VarChar(200)
+  message        String
+  payload        Json?
+  isRead         Boolean   @default(false)
+  createdAt      DateTime  @default(now())
+  captain        Captain   @relation(fields: [captainId], references: [id], onDelete: Cascade)
+}
+
+model ParcelOrder {
+  id                String      @id @default(uuid())
+  customerId        String
+  senderName        String      @db.VarChar(150)
+  senderPhone       String      @db.VarChar(20)
+  pickupAddress     String
+  pickupLatitude    Decimal?    @db.Decimal(10, 7)
+  pickupLongitude   Decimal?    @db.Decimal(10, 7)
+  receiverName      String      @db.VarChar(150)
+  receiverPhone     String      @db.VarChar(20)
+  dropAddress       String
+  dropLatitude      Decimal?    @db.Decimal(10, 7)
+  dropLongitude     Decimal?    @db.Decimal(10, 7)
+  packageDetails    String?
+  status            String      @db.VarChar(50)
+  deliveryFee       Decimal     @default(0) @db.Decimal(10, 2)
+  createdAt         DateTime    @default(now())
+  updatedAt         DateTime    @updatedAt
+  customer          User        @relation("ParcelCustomer", fields: [customerId], references: [id], onDelete: Cascade)
 }
 
 model DeliveryAssignment {

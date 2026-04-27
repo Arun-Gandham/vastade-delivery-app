@@ -11,9 +11,11 @@
 | View Own Orders  |      Yes | Assigned only |   Shop orders only |   All |         All |
 | Manage Products  |       No |            No | Limited if allowed |   Yes |         Yes |
 | Manage Inventory |       No |            No |           Own shop |   Yes |         Yes |
-| Assign Captain   |       No |            No |    Own shop orders |   Yes |         Yes |
+| Assign Captain   |       No |            No |                 No | System / Admin review only | System / Admin review only |
 | Deliver Order    |       No | Assigned only |                 No |    No |          No |
 | Reports          |       No |            No |           Own shop |   All |         All |
+| Verify Captains  |       No |            No |                 No |   Yes |         Yes |
+| Track Delivery   | Own orders only | Assigned only | Own orders only |   All |         All |
 
 ---
 
@@ -34,7 +36,9 @@ Inventory
 Cart
 Order
 Shop order management
-Manual captain assignment
+Captain self-registration
+Admin captain verification
+Generic delivery task lifecycle
 Captain delivery flow
 COD payment
 Basic admin dashboard
@@ -48,8 +52,7 @@ Subscription
 Advanced offers
 AI recommendation
 Multiple payment gateways
-Live map tracking
-Auto captain assignment
+Live map tracking polish
 Complex settlement
 ```
 
@@ -73,7 +76,7 @@ Complex settlement
 11. Order placement with transaction
 12. Shop order status APIs
 13. Captain module
-14. Delivery assignment APIs
+14. Delivery task and task-offer APIs
 15. Payment module basic COD
 16. Notification queue
 17. Dashboard APIs
@@ -136,6 +139,15 @@ Repository responsibility:
 ```txt
 Database access only
 No business rules
+```
+
+## New captain and delivery module standards
+
+```txt
+captains module owns self-registration, profile, documents, verification state, and admin captain review APIs
+delivery-tasks module owns generic logistics tasks, task offers, task acceptance, task progression, and parcel-linked delivery orchestration
+orders module should create grocery delivery tasks but should not own generic captain matching rules
+shop modules may expose tracking for their own orders but must not create or approve captains
 ```
 
 ---

@@ -1,6 +1,6 @@
-# Product Documentation — Shared Source of Truth
+# Product Documentation - Shared Source of Truth
 
-This folder contains shared product requirements used by both backend and frontend.
+This folder contains the shared product requirements used by both backend and frontend.
 
 Use this folder for:
 
@@ -11,7 +11,7 @@ MVP scope
 user flows
 API contracts
 business rules
-statuses/enums
+statuses and enums
 full-stack change requests
 ```
 
@@ -30,4 +30,5 @@ full-stack change requests
 - Business rule changed: update `05-business-rules-statuses.md`
 - User flow changed: update `03-user-flows.md`
 - Role or MVP scope changed: update `02-roles-permissions-mvp-scope.md`
-- New full-stack change: add entry in `06-change-requests.md`
+- New full-stack change: add an entry in `06-change-requests.md`
+- Captain or dispatch architecture changed: update `03-user-flows.md`, `04-api-contracts.md`, and `05-business-rules-statuses.md` together

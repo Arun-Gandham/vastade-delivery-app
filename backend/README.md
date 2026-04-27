@@ -1,6 +1,6 @@
 # Quick Commerce Backend
 
-TypeScript and Express backend for the Quick Commerce MVP. The backend exposes role-based APIs for auth, users, addresses, shops, categories, products, inventory, cart, orders, captains, notifications, uploads, and dashboards.
+TypeScript and Express backend for the Quick Commerce MVP. The backend exposes role-based APIs for auth, users, addresses, shops, categories, products, inventory, cart, orders, captains, generic delivery tasks, parcels, notifications, uploads, and dashboards.
 
 ## Stack
 
@@ -49,9 +49,18 @@ http://localhost:5000/api-docs
 - `src/modules/cart`
 - `src/modules/orders`
 - `src/modules/captains`
+- `src/modules/delivery-tasks`
 - `src/modules/notifications`
 - `src/modules/uploads`
 - `src/modules/dashboard`
+
+## Captain and delivery architecture
+
+- captains self-register from public captain registration or future captain web/mobile clients
+- admin reviews, approves, rejects, blocks, and audits captains
+- shops do not create or approve captains
+- grocery and parcel dispatch both flow through generic `delivery_tasks`
+- captain assignment is modeled as task offers and acceptance, not only direct order-to-captain coupling
 
 ## S3 image flow
 
@@ -99,6 +108,8 @@ S3_BUCKET_PUBLIC=false
 
 - JWT access and refresh token flow with persisted sessions
 - Transactional order placement, cancellation, captain delivery, and inventory adjustment
+- Generic delivery-task creation when grocery orders become ready for pickup
+- Nearby approved online captain matching using captain location and task offers
 - Soft-delete behavior for catalog entities through `isActive`
 - Customer-facing APIs that can be reused by the web frontend and future mobile apps
 - Queue bootstrap for order notifications using BullMQ
@@ -110,6 +121,8 @@ S3_BUCKET_PUBLIC=false
 - Shop owner: `8888888888` / `Admin@123`
 - Customer: `7777777777` / `Customer@123`
 - Captain: `6666666666` / `Captain@123`
+
+The seeded captain is already approved and online so delivery-task matching can be exercised locally.
 
 ## Build and test
 

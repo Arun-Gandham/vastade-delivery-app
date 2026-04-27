@@ -17,10 +17,6 @@ export default function AdminOrderDetailPage() {
     queryKey: queryKeys.order(params.orderId),
     queryFn: () => orderApi.adminOrderDetails(params.orderId),
   });
-  const captainsQuery = useQuery({
-    queryKey: queryKeys.availableCaptains,
-    queryFn: orderApi.availableCaptains,
-  });
   const mutations = useOrderMutations();
 
   return (
@@ -50,19 +46,6 @@ export default function AdminOrderDetailPage() {
             </Button>
             <Button variant="outline" onClick={() => mutations.adminUpdateStatus.mutate({ orderId: orderQuery.data!.id, status: "READY_FOR_PICKUP" })}>
               Ready for Pickup
-            </Button>
-            <Button
-              variant="outline"
-              disabled={!captainsQuery.data?.[0]}
-              onClick={() =>
-                captainsQuery.data?.[0] &&
-                mutations.adminAssignCaptain.mutate({
-                  orderId: orderQuery.data!.id,
-                  captainId: captainsQuery.data[0].id,
-                })
-              }
-            >
-              Assign First Available Captain
             </Button>
           </Card>
         </div>

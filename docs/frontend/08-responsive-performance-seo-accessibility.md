@@ -32,4 +32,4 @@ Use semantic HTML, labels, aria-label for icon buttons, keyboard navigation, vis
 
 ## Prevent duplicate actions
 
-Disable buttons while processing place order, cancel order, mark delivered, assign captain, stock adjust, and payment verify.
+Disable buttons while processing place order, cancel order, accept task, reject task, task-status update, stock adjust, and payment verify.

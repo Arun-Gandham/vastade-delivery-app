@@ -1,7 +1,7 @@
 "use client";
 
 import { CaptainAppShell } from "@/components/layout/captain-app-shell";
-import { OrderCard } from "@/components/customer/order-card";
+import { CaptainTaskCard } from "@/components/captain/captain-task-card";
 import { DataState } from "@/components/shared/data-state";
 import { PageContainer } from "@/components/shared/page-container";
 import { useCaptainOrdersDataQuery } from "@/features/captain/captain.hooks";
@@ -12,16 +12,16 @@ export default function CaptainOrdersPage() {
 
   return (
     <CaptainAppShell>
-      <PageContainer title="Assigned Orders" description="Pickup, deliver, and collect COD for your active tasks.">
+      <PageContainer title="Assigned Tasks" description="Pickup, deliver, and complete active logistics tasks.">
         <DataState
           isLoading={ordersQuery.isLoading}
           error={getErrorMessage(ordersQuery.error, "")}
           isEmpty={!ordersQuery.data?.length}
-          emptyTitle="No captain orders"
-          emptyDescription="Orders assigned by shops or admins will appear here."
+          emptyTitle="No captain tasks"
+          emptyDescription="Available and accepted delivery tasks will appear here."
         >
           <div className="grid gap-4 md:grid-cols-2">
-            {ordersQuery.data?.map((order) => <OrderCard key={order.id} order={order} basePath="/captain/orders" />)}
+            {ordersQuery.data?.map((task) => <CaptainTaskCard key={task.id} task={task} basePath="/captain/orders" />)}
           </div>
         </DataState>
       </PageContainer>
