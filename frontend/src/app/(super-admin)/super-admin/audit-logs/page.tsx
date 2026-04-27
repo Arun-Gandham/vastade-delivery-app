@@ -1,5 +1,5 @@
-import { redirect } from "next/navigation";
+import AdminOrdersPage from "../../../(admin)/admin/orders/page";
 
 export default function SuperAdminAuditLogsPage() {
-  redirect("/admin/orders");
+  return <AdminOrdersPage />;
 }

@@ -26,9 +26,6 @@ const superAdminItems: DashboardNavItem[] = [
   { href: "/super-admin/admins", label: "Admins" },
   { href: "/super-admin/audit-logs", label: "Audit Logs" },
   { href: "/super-admin/settings", label: "Settings" },
-  { href: "/admin/categories", label: "Categories" },
-  { href: "/admin/shops", label: "Shops" },
-  { href: "/admin/orders", label: "Orders" },
 ];
 
 const shopOwnerRootItems: DashboardNavItem[] = [

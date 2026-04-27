@@ -1,7 +1,6 @@
 "use client";
 
 import { useForm } from "react-hook-form";
-import { DashboardShell } from "@/components/layout/dashboard-shell";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { couponApi } from "@/features/coupons/coupon.api";
@@ -29,24 +28,22 @@ export default function AdminCouponsPage() {
   });
 
   return (
-    <DashboardShell title="Coupons" navItems={[{ href: "/admin/dashboard", label: "Dashboard" }, { href: "/admin/coupons", label: "Coupons" }]}>
-      <div className="space-y-4">
-        <p className="text-sm text-[var(--color-text-muted)]">
-          The current backend supports coupon create, update, delete, and validate, but does not expose a list endpoint. This screen supports real coupon creation only.
-        </p>
-        <form className="grid gap-4 md:grid-cols-3" onSubmit={onSubmit}>
-          <Input label="Code" error={errors.code?.message} {...register("code")} />
-          <Input label="Value" error={errors.value?.message} {...register("value")} />
-          <Input label="Minimum Order Amount" error={errors.minOrderAmount?.message} {...register("minOrderAmount")} />
-          <Input label="Valid From" type="datetime-local" error={errors.validFrom?.message} {...register("validFrom")} />
-          <Input label="Valid To" type="datetime-local" error={errors.validTo?.message} {...register("validTo")} />
-          <div className="flex items-end">
-            <Button className="w-full" loading={isSubmitting} type="submit">
-              Create Coupon
-            </Button>
-          </div>
-        </form>
-      </div>
-    </DashboardShell>
+    <div className="space-y-4">
+      <p className="text-sm text-[var(--color-text-muted)]">
+        The current backend supports coupon create, update, delete, and validate, but does not expose a list endpoint. This screen supports real coupon creation only.
+      </p>
+      <form className="grid gap-4 md:grid-cols-3" onSubmit={onSubmit}>
+        <Input label="Code" error={errors.code?.message} {...register("code")} />
+        <Input label="Value" error={errors.value?.message} {...register("value")} />
+        <Input label="Minimum Order Amount" error={errors.minOrderAmount?.message} {...register("minOrderAmount")} />
+        <Input label="Valid From" type="datetime-local" error={errors.validFrom?.message} {...register("validFrom")} />
+        <Input label="Valid To" type="datetime-local" error={errors.validTo?.message} {...register("validTo")} />
+        <div className="flex items-end">
+          <Button className="w-full" loading={isSubmitting} type="submit">
+            Create Coupon
+          </Button>
+        </div>
+      </form>
+    </div>
   );
 }

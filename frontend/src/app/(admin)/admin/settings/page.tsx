@@ -2,7 +2,6 @@
 
 import { useEffect } from "react";
 import { useForm } from "react-hook-form";
-import { DashboardShell } from "@/components/layout/dashboard-shell";
 import { ImageUploadField } from "@/components/shared/image-upload-field";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -50,36 +49,34 @@ export default function AdminSettingsPage() {
   });
 
   return (
-    <DashboardShell title="Settings" navItems={[{ href: "/admin/dashboard", label: "Dashboard" }, { href: "/admin/settings", label: "Settings" }]}>
-      <div className="grid gap-6 lg:grid-cols-2">
-        <Card className="space-y-4">
-          <h2 className="text-lg font-semibold">Profile</h2>
-          <form className="space-y-3" onSubmit={submitProfile}>
-            <Input label="Name" {...profileForm.register("name")} />
-            <Input label="Email" {...profileForm.register("email")} />
-            <input type="hidden" {...profileForm.register("profileImage")} />
-            <ImageUploadField
-              folder="profiles"
-              helperText="Admin profile images upload directly to S3 and the saved form value remains the object key only."
-              label="Profile Image"
-              onChange={(nextValue) =>
-                profileForm.setValue("profileImage", nextValue, { shouldDirty: true, shouldValidate: true })
-              }
-              previewUrl={user?.profileImageUrl || ""}
-              value={profileImage}
-            />
-            <Button type="submit">Save Profile</Button>
-          </form>
-        </Card>
-        <Card className="space-y-4">
-          <h2 className="text-lg font-semibold">Change Password</h2>
-          <form className="space-y-3" onSubmit={submitPassword}>
-            <Input label="Current Password" type="password" {...passwordForm.register("oldPassword")} />
-            <Input label="New Password" type="password" {...passwordForm.register("newPassword")} />
-            <Button type="submit">Update Password</Button>
-          </form>
-        </Card>
-      </div>
-    </DashboardShell>
+    <div className="grid gap-6 lg:grid-cols-2">
+      <Card className="space-y-4">
+        <h2 className="text-lg font-semibold">Profile</h2>
+        <form className="space-y-3" onSubmit={submitProfile}>
+          <Input label="Name" {...profileForm.register("name")} />
+          <Input label="Email" {...profileForm.register("email")} />
+          <input type="hidden" {...profileForm.register("profileImage")} />
+          <ImageUploadField
+            folder="profiles"
+            helperText="Admin profile images upload directly to S3 and the saved form value remains the object key only."
+            label="Profile Image"
+            onChange={(nextValue) =>
+              profileForm.setValue("profileImage", nextValue, { shouldDirty: true, shouldValidate: true })
+            }
+            previewUrl={user?.profileImageUrl || ""}
+            value={profileImage}
+          />
+          <Button type="submit">Save Profile</Button>
+        </form>
+      </Card>
+      <Card className="space-y-4">
+        <h2 className="text-lg font-semibold">Change Password</h2>
+        <form className="space-y-3" onSubmit={submitPassword}>
+          <Input label="Current Password" type="password" {...passwordForm.register("oldPassword")} />
+          <Input label="New Password" type="password" {...passwordForm.register("newPassword")} />
+          <Button type="submit">Update Password</Button>
+        </form>
+      </Card>
+    </div>
   );
 }

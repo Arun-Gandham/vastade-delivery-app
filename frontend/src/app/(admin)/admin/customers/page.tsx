@@ -3,7 +3,6 @@
 import { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { queryKeys } from "@/constants/query-keys";
-import { DashboardShell } from "@/components/layout/dashboard-shell";
 import { DataState } from "@/components/shared/data-state";
 import { DataTable } from "@/components/dashboard/data-table";
 import { orderApi } from "@/features/orders/order.api";
@@ -22,23 +21,21 @@ export default function AdminCustomersPage() {
   }, [ordersQuery.data]);
 
   return (
-    <DashboardShell title="Customers" navItems={[{ href: "/admin/dashboard", label: "Dashboard" }, { href: "/admin/customers", label: "Customers" }]}>
-      <DataState
-        isLoading={ordersQuery.isLoading}
-        error={getErrorMessage(ordersQuery.error, "")}
-        isEmpty={!customers.length}
-        emptyTitle="No customers derived yet"
-        emptyDescription="Customer rows are derived from real admin order data in the current MVP backend."
-      >
-        <DataTable
-          columns={["Customer ID", "Name", "Mobile"]}
-          rows={customers.map((customer) => ({
-            "Customer ID": customer.id,
-            Name: customer.name,
-            Mobile: customer.mobile,
-          }))}
-        />
-      </DataState>
-    </DashboardShell>
+    <DataState
+      isLoading={ordersQuery.isLoading}
+      error={getErrorMessage(ordersQuery.error, "")}
+      isEmpty={!customers.length}
+      emptyTitle="No customers derived yet"
+      emptyDescription="Customer rows are derived from real admin order data in the current MVP backend."
+    >
+      <DataTable
+        columns={["Customer ID", "Name", "Mobile"]}
+        rows={customers.map((customer) => ({
+          "Customer ID": customer.id,
+          Name: customer.name,
+          Mobile: customer.mobile,
+        }))}
+      />
+    </DataState>
   );
 }

@@ -1,5 +1,5 @@
-import { redirect } from "next/navigation";
+import AdminCustomersPage from "../../../(admin)/admin/customers/page";
 
 export default function SuperAdminAdminsPage() {
-  redirect("/admin/settings");
+  return <AdminCustomersPage />;
 }
