@@ -2,6 +2,7 @@
 /* eslint-disable @next/next/no-img-element */
 
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { Eye, Pencil, Plus, Trash2 } from "lucide-react";
 import { DataState } from "@/components/shared/data-state";
 import { DataTable } from "@/components/dashboard/data-table";
@@ -12,6 +13,8 @@ import { useCategoriesQuery, useCategoryMutations } from "@/features/categories/
 import { getErrorMessage } from "@/lib/utils/errors";
 
 export default function AdminCategoriesPage() {
+  const pathname = usePathname();
+  const basePath = pathname.startsWith("/super-admin") ? "/super-admin" : "/admin";
   const categoriesQuery = useCategoriesQuery();
   const mutations = useCategoryMutations();
   const categories = categoriesQuery.data || [];
@@ -80,12 +83,12 @@ export default function AdminCategoriesPage() {
             "Sort Order": <span className="text-sm font-semibold text-[#111827]">{item.sortOrder || 0}</span>,
             Actions: (
               <div className="flex items-center gap-2">
-                <Link href={`/admin/categories/${item.id}`}>
-                  <Button variant="outline" className="h-8 w-8 rounded-xl p-0" type="button">
-                    <Eye className="h-3.5 w-3.5" />
-                  </Button>
-                </Link>
-                <Link href={`/admin/categories/${item.id}/edit`}>
+                <Link href={`${basePath}/categories/${item.id}`}>
+                <Button variant="outline" className="h-8 w-8 rounded-xl p-0" type="button">
+                  <Eye className="h-3.5 w-3.5" />
+                </Button>
+              </Link>
+                <Link href={`${basePath}/categories/${item.id}/edit`}>
                   <Button variant="ghost" className="h-8 w-8 rounded-xl p-0" type="button">
                     <Pencil className="h-3.5 w-3.5" />
                   </Button>
@@ -102,7 +105,7 @@ export default function AdminCategoriesPage() {
             ),
           }))}
           actions={
-            <Link href="/admin/categories/new">
+            <Link href={`${basePath}/categories/new`}>
               <Button className="h-10 rounded-2xl px-4 text-sm font-semibold" type="button">
                 <Plus className="h-4 w-4" />
                 New category

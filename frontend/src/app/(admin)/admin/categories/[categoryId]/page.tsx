@@ -2,7 +2,7 @@
 /* eslint-disable @next/next/no-img-element */
 
 import Link from "next/link";
-import { useParams } from "next/navigation";
+import { useParams, usePathname } from "next/navigation";
 import { ArrowLeft, Pencil } from "lucide-react";
 import { DataState } from "@/components/shared/data-state";
 import { Badge } from "@/components/ui/badge";
@@ -13,6 +13,8 @@ import { getErrorMessage } from "@/lib/utils/errors";
 
 export default function AdminCategoryDetailPage() {
   const params = useParams<{ categoryId: string }>();
+  const pathname = usePathname();
+  const basePath = pathname.startsWith("/super-admin") ? "/super-admin" : "/admin";
   const categoriesQuery = useCategoriesQuery();
   const category = (categoriesQuery.data || []).find((item) => item.id === params.categoryId);
 
@@ -32,13 +34,13 @@ export default function AdminCategoryDetailPage() {
               <h2 className="mt-1 text-2xl font-bold tracking-[-0.03em] text-[#111827]">{category?.name}</h2>
             </div>
             <div className="flex items-center gap-2">
-              <Link href="/admin/categories">
+              <Link href={`${basePath}/categories`}>
                 <Button variant="outline" className="h-10 rounded-2xl px-4 text-sm font-semibold">
                   <ArrowLeft className="h-4 w-4" />
                   Back
                 </Button>
               </Link>
-              <Link href={`/admin/categories/${category?.id}/edit`}>
+              <Link href={`${basePath}/categories/${category?.id}/edit`}>
                 <Button className="h-10 rounded-2xl px-4 text-sm font-semibold">
                   <Pencil className="h-4 w-4" />
                   Edit

@@ -187,9 +187,34 @@ Admin and super-admin dashboard shells were aligned around shared route-level la
 - docs/product/02-roles-permissions-mvp-scope.md
 - docs/product/03-user-flows.md
 - docs/frontend/01-frontend-overview.md
+- docs/frontend/04-routes-pages.md
 - docs/frontend/07-components-layouts.md
 - docs/frontend/CHANGELOG.md
 
 ### Verification
 - Frontend routes now keep super-admin URLs inside `/super-admin/*`.
 - Admin and super-admin docs match the current shared-shell behavior and role redirects.
+
+## 2026-04-27 - List-first management flow and mirrored super-admin access
+
+### Type
+Frontend and documentation
+
+### Status
+Implemented
+
+### Summary
+Admin management pages for shops, products, and coupons were shifted toward a cleaner list-first pattern with dedicated create and edit pages. Super-admin now has mirrored management routes for the major admin modules while staying inside `/super-admin/*`.
+
+### Updated docs
+- README.md
+- frontend/README.md
+- docs/frontend/01-frontend-overview.md
+- docs/frontend/04-routes-pages.md
+- docs/frontend/07-components-layouts.md
+- docs/frontend/CHANGELOG.md
+- docs/product/03-user-flows.md
+
+### Verification
+- Frontend build succeeded after adding the dedicated routes and mirrored super-admin pages.
+- Management flows now keep list pages cleaner and preserve the super-admin URL space.

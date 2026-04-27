@@ -151,6 +151,8 @@ Admin, shop-owner, and super-admin screens should inherit one shared enterprise 
 Sidebar should feel stable and premium rather than default utility navigation
 Topbar should expose role context, current user, and logout in a compact control surface
 Admin and super-admin should mount the shell from route layouts so menu navigation swaps content without remounting sidebar and header
+Admin and super-admin list pages should avoid inline create forms when a dedicated management route exists
+Add and edit actions should be compact and should open dedicated pages instead of expanding the list surface
 Captain and customer mobile bottom navigation should use the same polished floating navigation language
 Typography should be tighter and more structured than storefront pages
 Surface styling should favor quieter backgrounds, softer borders, and stronger layout hierarchy

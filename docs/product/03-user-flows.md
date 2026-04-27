@@ -86,13 +86,22 @@ This file is the shared source for customer, shop owner, captain, admin, and sup
 /admin/customers
 /admin/captains
 /admin/shops
+/admin/shops/new
 /admin/shops/[shopId]
+/admin/shops/[shopId]/edit
 /admin/categories
+/admin/categories/new
+/admin/categories/[categoryId]
+/admin/categories/[categoryId]/edit
 /admin/products
+/admin/products/new
+/admin/products/[productId]
+/admin/products/[productId]/edit
 /admin/inventory
 /admin/orders
 /admin/orders/[orderId]
 /admin/coupons
+/admin/coupons/new
 /admin/reports/sales
 /admin/reports/product-sales
 /admin/reports/low-stock
@@ -108,6 +117,28 @@ Super admin has its own route space and should stay inside `/super-admin/*`.
 /super-admin
 /super-admin/dashboard
 /super-admin/admins
+/super-admin/shops
+/super-admin/shops/new
+/super-admin/shops/[shopId]
+/super-admin/shops/[shopId]/edit
+/super-admin/categories
+/super-admin/categories/new
+/super-admin/categories/[categoryId]
+/super-admin/categories/[categoryId]/edit
+/super-admin/products
+/super-admin/products/new
+/super-admin/products/[productId]
+/super-admin/products/[productId]/edit
+/super-admin/orders
+/super-admin/orders/[orderId]
+/super-admin/inventory
+/super-admin/customers
+/super-admin/captains
+/super-admin/coupons
+/super-admin/coupons/new
+/super-admin/reports/sales
+/super-admin/reports/product-sales
+/super-admin/notifications
 /super-admin/settings
 /super-admin/audit-logs
 ```
@@ -530,6 +561,17 @@ Admin panel manages the whole MVP platform. Super admin has full access.
 /super-admin/dashboard
 /super-admin/admins
 /super-admin/audit-logs
+/super-admin/shops
+/super-admin/categories
+/super-admin/products
+/super-admin/orders
+/super-admin/inventory
+/super-admin/customers
+/super-admin/captains
+/super-admin/coupons
+/super-admin/reports/sales
+/super-admin/reports/product-sales
+/super-admin/notifications
 /super-admin/settings
 ```
 
@@ -539,6 +581,8 @@ Current implementation note:
 Super-admin pages stay under /super-admin/*
 Super-admin shell is shared at the route-layout level
 Sidebar and topbar should persist while only page content changes
+Super-admin can browse the main management modules without changing URL space into /admin
+Management lists should stay list-only while add and edit open as separate pages
 ```
 
 ## Dashboard API

@@ -89,6 +89,7 @@ Shared full-width customer shell reused across all customer pages
 Public landing page that surfaces live categories and products through a storefront-style header, search, and footer
 Shared enterprise dashboard chrome across admin, shop-owner, captain, and super-admin role surfaces
 Admin and super-admin dashboards use shared route-level layouts so sidebar and topbar stay mounted during in-section navigation
+Admin and super-admin management pages use list-first screens, with dedicated create and edit routes instead of inline forms on listing pages
 Typography, spacing, and component sizing aligned to the newer public-page design language
 ```
 

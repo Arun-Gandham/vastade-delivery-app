@@ -1,49 +1,34 @@
 "use client";
 
-import { useForm } from "react-hook-form";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { couponApi } from "@/features/coupons/coupon.api";
-import { couponSchema } from "@/features/coupons/coupon.validation";
-import { applyZodErrors } from "@/lib/utils/forms";
+import { Card } from "@/components/ui/card";
 
 export default function AdminCouponsPage() {
-  const { register, handleSubmit, setError, reset, formState: { errors, isSubmitting } } = useForm<Record<string, string>>();
-
-  const onSubmit = handleSubmit(async (values) => {
-    const result = couponSchema.safeParse({
-      ...values,
-      value: Number(values.value),
-      minOrderAmount: Number(values.minOrderAmount),
-      maxDiscount: values.maxDiscount ? Number(values.maxDiscount) : undefined,
-      usageLimit: values.usageLimit ? Number(values.usageLimit) : undefined,
-      isActive: values.isActive !== "false",
-    });
-    if (!result.success) {
-      applyZodErrors(result.error as never, setError as never);
-      return;
-    }
-    await couponApi.create(result.data);
-    reset();
-  });
+  const pathname = usePathname();
+  const basePath = pathname.startsWith("/super-admin") ? "/super-admin" : "/admin";
 
   return (
-    <div className="space-y-4">
-      <p className="text-sm text-[var(--color-text-muted)]">
-        The current backend supports coupon create, update, delete, and validate, but does not expose a list endpoint. This screen supports real coupon creation only.
-      </p>
-      <form className="grid gap-4 md:grid-cols-3" onSubmit={onSubmit}>
-        <Input label="Code" error={errors.code?.message} {...register("code")} />
-        <Input label="Value" error={errors.value?.message} {...register("value")} />
-        <Input label="Minimum Order Amount" error={errors.minOrderAmount?.message} {...register("minOrderAmount")} />
-        <Input label="Valid From" type="datetime-local" error={errors.validFrom?.message} {...register("validFrom")} />
-        <Input label="Valid To" type="datetime-local" error={errors.validTo?.message} {...register("validTo")} />
-        <div className="flex items-end">
-          <Button className="w-full" loading={isSubmitting} type="submit">
-            Create Coupon
-          </Button>
+    <div className="space-y-6">
+      <Card className="rounded-[28px] border border-[#e8edf3] bg-white p-6 shadow-[0_18px_44px_rgba(15,23,42,0.05)]">
+        <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+          <div className="space-y-2">
+            <h2 className="text-xl font-bold tracking-[-0.03em] text-[#111827]">Coupons</h2>
+            <p className="text-sm leading-7 text-[#667085]">
+              The backend currently supports coupon create, update, delete, and validate, but does not expose a coupon list endpoint.
+              This management screen stays list-only and routes creation into a dedicated page.
+            </p>
+          </div>
+          <Link href={`${basePath}/coupons/new`}>
+            <Button className="h-10 rounded-2xl px-4 text-sm font-semibold" type="button">
+              <Plus className="h-4 w-4" />
+              New coupon
+            </Button>
+          </Link>
         </div>
-      </form>
+      </Card>
     </div>
   );
 }

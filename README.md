@@ -15,6 +15,7 @@ Quick Commerce is a full-stack grocery ordering MVP with a Next.js frontend, an 
 - Role-based dashboards and protected routes for customer, captain, shop owner, admin, and super admin
 - Shared enterprise UI chrome for dashboard roles through common sidebar, topbar, and floating mobile nav components
 - Shared route-level dashboard layouts for admin and super-admin so sidebar and topbar persist while only page content changes
+- Admin and super-admin management sections now favor list-only screens with dedicated create and edit pages for categories, shops, products, and coupons
 - Direct-to-S3 image upload flow with backend-issued presigned `PUT` URLs
 - S3 object key storage in the database with resolved browser-safe `imageUrl` values in API responses
 - Support for both public buckets and private buckets with signed read URLs

@@ -69,6 +69,7 @@ The current visual baseline follows the newer public-page design language:
 - calmer enterprise dashboard chrome
 
 Admin and super-admin now use route-level shared dashboard layouts, so menu changes keep the same sidebar and topbar mounted while only the page content swaps.
+Management screens now follow a cleaner pattern where list pages stay focused on table or card browsing, while create and edit flows open on separate routes.
 
 ## Setup
 

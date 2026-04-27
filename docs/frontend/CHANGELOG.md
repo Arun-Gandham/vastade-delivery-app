@@ -56,3 +56,4 @@
 ### Changed
 - Updated frontend docs so typography scale, spacing, search sizing, footer density, and dashboard chrome reflect the current public-page design language.
 - Updated docs to reflect shared route-level dashboard layouts for admin and super-admin, plus the current `SUPER_ADMIN -> /super-admin/dashboard` redirect behavior.
+- Updated docs to reflect list-only admin and super-admin management pages, dedicated create and edit routes for shops/products/categories/coupons, and mirrored super-admin management routes.

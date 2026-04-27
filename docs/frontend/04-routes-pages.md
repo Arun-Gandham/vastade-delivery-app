@@ -88,13 +88,22 @@ Public landing page expectations:
 /admin/customers
 /admin/captains
 /admin/shops
+/admin/shops/new
 /admin/shops/[shopId]
+/admin/shops/[shopId]/edit
 /admin/categories
+/admin/categories/new
+/admin/categories/[categoryId]
+/admin/categories/[categoryId]/edit
 /admin/products
+/admin/products/new
+/admin/products/[productId]
+/admin/products/[productId]/edit
 /admin/inventory
 /admin/orders
 /admin/orders/[orderId]
 /admin/coupons
+/admin/coupons/new
 /admin/reports/sales
 /admin/reports/product-sales
 /admin/reports/low-stock
@@ -104,14 +113,34 @@ Public landing page expectations:
 
 ## Super admin routes
 
-Super admin can use the same admin routes with full permissions.
-
-Optional separate routes:
+Super admin has its own mirrored management route space and should stay inside `/super-admin/*`.
 
 ```txt
 /super-admin
 /super-admin/dashboard
 /super-admin/admins
+/super-admin/shops
+/super-admin/shops/new
+/super-admin/shops/[shopId]
+/super-admin/shops/[shopId]/edit
+/super-admin/categories
+/super-admin/categories/new
+/super-admin/categories/[categoryId]
+/super-admin/categories/[categoryId]/edit
+/super-admin/products
+/super-admin/products/new
+/super-admin/products/[productId]
+/super-admin/products/[productId]/edit
+/super-admin/orders
+/super-admin/orders/[orderId]
+/super-admin/inventory
+/super-admin/customers
+/super-admin/captains
+/super-admin/coupons
+/super-admin/coupons/new
+/super-admin/reports/sales
+/super-admin/reports/product-sales
+/super-admin/notifications
 /super-admin/settings
 /super-admin/audit-logs
 ```
@@ -119,6 +148,15 @@ Optional separate routes:
 ## Required page behavior
 
 Login page must support all roles and redirect by role. Customer pages must support product browsing, cart, checkout, orders, addresses, profile, and notifications. Shop owner pages must support shops, dashboard, inventory, orders, reports, and open/close status. Captain pages must support online status, location, assigned orders, pickup, delivery, and COD collection. Admin pages must support dashboard, shops, categories, products, orders, captains, coupons, reports, and settings.
+
+Admin and super-admin management route expectations:
+
+```txt
+List pages should stay focused on lists or cards
+Create forms should open on dedicated /new routes
+Edit forms should open on dedicated /[id]/edit routes
+Detail pages should expose compact view and edit actions
+```
 
 Customer storefront expectations:
 

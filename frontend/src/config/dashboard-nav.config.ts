@@ -25,6 +25,17 @@ const superAdminItems: DashboardNavItem[] = [
   { href: "/super-admin/dashboard", label: "Dashboard" },
   { href: "/super-admin/admins", label: "Admins" },
   { href: "/super-admin/audit-logs", label: "Audit Logs" },
+  { href: "/super-admin/shops", label: "Shops" },
+  { href: "/super-admin/categories", label: "Categories" },
+  { href: "/super-admin/products", label: "Products" },
+  { href: "/super-admin/orders", label: "Orders" },
+  { href: "/super-admin/inventory", label: "Inventory" },
+  { href: "/super-admin/customers", label: "Customers" },
+  { href: "/super-admin/captains", label: "Captains" },
+  { href: "/super-admin/coupons", label: "Coupons" },
+  { href: "/super-admin/reports/sales", label: "Sales Report" },
+  { href: "/super-admin/reports/product-sales", label: "Product Report" },
+  { href: "/super-admin/notifications", label: "Notifications" },
   { href: "/super-admin/settings", label: "Settings" },
 ];
 
