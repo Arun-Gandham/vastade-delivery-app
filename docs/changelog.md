@@ -169,3 +169,27 @@ The public `/` landing page was converted from a basic marketing page into a sto
 
 ### Verification
 - Public landing page now renders the storefront-style header, search, categories, product sections, and footer.
+
+## 2026-04-27 - Dashboard routing and role-doc alignment
+
+### Type
+Frontend and documentation
+
+### Status
+Implemented
+
+### Summary
+Admin and super-admin dashboard shells were aligned around shared route-level layouts so sidebar and topbar persist during in-section navigation. Markdown files were updated to match the current super-admin route behavior and role home paths.
+
+### Updated docs
+- README.md
+- frontend/README.md
+- docs/product/02-roles-permissions-mvp-scope.md
+- docs/product/03-user-flows.md
+- docs/frontend/01-frontend-overview.md
+- docs/frontend/07-components-layouts.md
+- docs/frontend/CHANGELOG.md
+
+### Verification
+- Frontend routes now keep super-admin URLs inside `/super-admin/*`.
+- Admin and super-admin docs match the current shared-shell behavior and role redirects.

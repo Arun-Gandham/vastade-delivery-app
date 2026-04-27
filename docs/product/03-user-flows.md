@@ -102,9 +102,7 @@ This file is the shared source for customer, shop owner, captain, admin, and sup
 
 ## Super admin routes
 
-Super admin can use the same admin routes with full permissions.
-
-Optional separate routes:
+Super admin has its own route space and should stay inside `/super-admin/*`.
 
 ```txt
 /super-admin
@@ -158,7 +156,7 @@ CAPTAIN       -> /captain
 SHOP_OWNER    -> /shop-owner
 STORE_MANAGER -> /shop-owner
 ADMIN         -> /admin
-SUPER_ADMIN   -> /admin or /super-admin
+SUPER_ADMIN   -> /super-admin/dashboard
 ```
 
 ## Route protection
@@ -529,12 +527,19 @@ Admin panel manages the whole MVP platform. Super admin has full access.
 ## Super admin routes
 
 ```txt
+/super-admin/dashboard
 /super-admin/admins
 /super-admin/audit-logs
-/super-admin/platform-settings
+/super-admin/settings
 ```
 
-These can be placeholders if backend is not ready.
+Current implementation note:
+
+```txt
+Super-admin pages stay under /super-admin/*
+Super-admin shell is shared at the route-layout level
+Sidebar and topbar should persist while only page content changes
+```
 
 ## Dashboard API
 
@@ -600,4 +605,3 @@ GET /admin/reports/low-stock
 ## Layout
 
 Use desktop sidebar and topbar. On mobile use drawer, cards instead of wide tables, and bottom sheet actions.
-

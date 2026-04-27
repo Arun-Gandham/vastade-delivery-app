@@ -55,3 +55,4 @@
 
 ### Changed
 - Updated frontend docs so typography scale, spacing, search sizing, footer density, and dashboard chrome reflect the current public-page design language.
+- Updated docs to reflect shared route-level dashboard layouts for admin and super-admin, plus the current `SUPER_ADMIN -> /super-admin/dashboard` redirect behavior.

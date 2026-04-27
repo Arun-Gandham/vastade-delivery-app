@@ -6,6 +6,28 @@ This file is the shared source for roles, access, MVP scope, and development pri
 
 # Access, MVP Scope, Development Standards
 
+# Supported Roles
+
+```txt
+SUPER_ADMIN
+ADMIN
+SHOP_OWNER
+STORE_MANAGER
+CUSTOMER
+CAPTAIN
+```
+
+Current frontend home paths:
+
+```txt
+SUPER_ADMIN   -> /super-admin/dashboard
+ADMIN         -> /admin/dashboard
+SHOP_OWNER    -> /shop-owner
+STORE_MANAGER -> /shop-owner
+CUSTOMER      -> /customer
+CAPTAIN       -> /captain
+```
+
 # 17. API Access Matrix
 
 | Module           | Customer |       Captain |         Shop Owner | Admin | Super Admin |
@@ -145,4 +167,3 @@ No business rules
 ```
 
 ---
-
