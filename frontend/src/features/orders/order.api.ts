@@ -13,17 +13,18 @@ export const orderApi = {
   shopOrders: (shopId: string) => unwrapResponse<Order[]>(api.get(`/shop-owner/shops/${shopId}/orders`)),
   shopOrderDetails: (shopId: string, orderId: string) =>
     unwrapResponse<Order>(api.get(`/shop-owner/shops/${shopId}/orders/${orderId}`)),
-  confirmOrder: (orderId: string) => unwrapResponse<Order>(api.post(`/shop-owner/orders/${orderId}/confirm`)),
-  markPacking: (orderId: string) =>
-    unwrapResponse<Order>(api.post(`/shop-owner/orders/${orderId}/mark-packing`)),
+  acceptOrderByShop: (orderId: string) => unwrapResponse<Order>(api.patch(`/shop-owner/orders/${orderId}/accept`)),
   readyForPickup: (orderId: string) =>
-    unwrapResponse<Order>(api.post(`/shop-owner/orders/${orderId}/ready-for-pickup`)),
+    unwrapResponse<Order>(api.patch(`/shop-owner/orders/${orderId}/ready-for-pickup`)),
   cancelByShop: (orderId: string, reason: string) =>
     unwrapResponse<Order>(api.post(`/shop-owner/orders/${orderId}/cancel`, { reason })),
   assignCaptainByShop: (orderId: string, captainId: string) =>
     unwrapResponse<Order>(api.post(`/shop-owner/orders/${orderId}/assign-captain`, { captainId })),
   adminOrders: () => unwrapResponse<Order[]>(api.get("/admin/orders")),
   adminOrderDetails: (orderId: string) => unwrapResponse<Order>(api.get(`/admin/orders/${orderId}`)),
+  adminAcceptOrder: (orderId: string) => unwrapResponse<Order>(api.patch(`/admin/orders/${orderId}/accept`)),
+  adminReadyForPickup: (orderId: string) =>
+    unwrapResponse<Order>(api.patch(`/admin/orders/${orderId}/ready-for-pickup`)),
   adminUpdateStatus: (orderId: string, status: string, remarks?: string) =>
     unwrapResponse<Order>(api.patch(`/admin/orders/${orderId}/status`, { status, remarks })),
   adminAssignCaptain: (orderId: string, captainId: string) =>

@@ -25,6 +25,15 @@ export const deliveryTaskRepository = {
       include: { offers: true, captain: { include: { user: true } }, earnings: true }
     }),
 
+  findOrderTaskByOrderId: (orderId: string, tx?: Prisma.TransactionClient) =>
+    db(tx).deliveryTask.findFirst({
+      where: {
+        referenceTable: "orders",
+        referenceId: orderId
+      },
+      include: { offers: true, captain: { include: { user: true } }, earnings: true }
+    }),
+
   updateTask: (taskId: string, data: Prisma.DeliveryTaskUncheckedUpdateInput, tx?: Prisma.TransactionClient) =>
     db(tx).deliveryTask.update({
       where: { id: taskId },
@@ -44,8 +53,7 @@ export const deliveryTaskRepository = {
         currentLongitude: { not: null }
       },
       include: { user: true, vehicles: true, bankDetails: true },
-      orderBy: { updatedAt: "desc" },
-      take: Math.max(radiusKm * 2, 10)
+      orderBy: { updatedAt: "desc" }
     }),
 
   createOffer: (
@@ -88,6 +96,16 @@ export const deliveryTaskRepository = {
     db(tx).captainTaskOffer.updateMany({
       where: { deliveryTaskId: taskId, captainId },
       data
+    }),
+
+  findOffer: (taskId: string, captainId: string, tx?: Prisma.TransactionClient) =>
+    db(tx).captainTaskOffer.findFirst({
+      where: { deliveryTaskId: taskId, captainId }
+    }),
+
+  listOffersByTask: (taskId: string, tx?: Prisma.TransactionClient) =>
+    db(tx).captainTaskOffer.findMany({
+      where: { deliveryTaskId: taskId }
     }),
 
   createParcelOrder: (

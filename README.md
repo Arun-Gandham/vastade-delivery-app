@@ -18,6 +18,8 @@ Quick Commerce is a full-stack grocery ordering MVP with a Next.js frontend, an 
 - Admin and super-admin management sections now favor list-only screens with dedicated create and edit pages for categories, shops, products, and coupons
 - Captain onboarding is modeled as self-registration plus admin verification
 - Delivery orchestration now runs through generic `delivery_tasks` for grocery, parcel, and future logistics services
+- Nearby captain matching, captain task offers, and live delivery tracking are designed around one generic delivery-task engine
+- Socket.IO is now wired for captain-side realtime delivery offers, task removal, and live status propagation
 - Direct-to-S3 image upload flow with backend-issued presigned `PUT` URLs
 - S3 object key storage in the database with resolved browser-safe `imageUrl` values in API responses
 - Support for both public buckets and private buckets with signed read URLs
@@ -31,6 +33,8 @@ Important business rules:
 - admin can review, approve, reject, block, unblock, and audit captains
 - shop users can only view assigned delivery context for their own orders
 - customer and shop tracking should read from `delivery_tasks`, not direct captain-order coupling
+- when an order becomes ready for pickup or ready for delivery, the backend should push the delivery task over sockets to all eligible nearby captains within radius
+- nearby captains can see the same eligible request in real time, but first acceptance wins and removes the offer for everyone else
 
 Dispatch model:
 

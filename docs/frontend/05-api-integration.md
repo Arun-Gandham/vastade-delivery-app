@@ -22,6 +22,9 @@ export const apiConfig = {
 ```env
 NEXT_PUBLIC_API_BASE_URL=http://localhost:5000/api/v1
 NEXT_PUBLIC_APP_NAME=Quick Commerce
+NEXT_PUBLIC_CAPTAIN_LOCATION_MIN_CHANGE_METERS=30
+NEXT_PUBLIC_CAPTAIN_LOCATION_MAXIMUM_AGE_MS=15000
+NEXT_PUBLIC_CAPTAIN_LOCATION_TIMEOUT_MS=20000
 ```
 
 ## API client
@@ -119,6 +122,17 @@ Use TanStack Query hooks such as `useLoginMutation`, `useProductsQuery`, `useCar
 
 Frontend clients should treat the captain and dispatch APIs as cross-client contracts for web and mobile reuse.
 
+Location tracking for captain clients should also follow a shared contract:
+
+```txt
+Use the same /captain/location/update API from web and mobile
+Use device geolocation as the source of truth for coordinates
+Do not send location on a blind every-second timer
+Only send updates while the captain is online
+Only send updates after meaningful movement, for example 30 meters
+Use map providers such as Google Maps or OpenStreetMap only for display, preview, navigation handoff, or directions
+```
+
 Required behavior:
 
 ```txt
@@ -128,6 +142,9 @@ Use /captain/go-online and /captain/go-offline for availability state
 Use /captain/location/update for live captain location
 Use /captain/tasks/* endpoints for accept, reject, and status progression
 Build captain pages against delivery-task responses instead of reusing customer order response assumptions
+Treat captain task list responses as map-capable view models with pickup and drop coordinates
+Keep a realtime subscription for captain offer arrival, offer expiry, task removal, acceptance, and live task status change
+When another captain wins an offer, remove that task card immediately instead of waiting for a poll refresh
 Use /orders/:orderId/delivery and /orders/:orderId/tracking for customer delivery tracking
 Use /shop/orders/:orderId/delivery and /shop/delivery-tasks/:taskId/tracking for shop delivery tracking
 Use /parcels endpoints for parcel creation and self-service parcel history

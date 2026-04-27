@@ -20,7 +20,14 @@ export const orderRepository = {
         address: true,
         shop: true,
         payment: true,
-        assignments: true
+        assignments: true,
+        captain: {
+          select: {
+            id: true,
+            name: true,
+            mobile: true
+          }
+        }
       }
     }),
   findByIdForAdmin: (id: string) =>
@@ -39,13 +46,24 @@ export const orderRepository = {
   listByCustomer: (customerId: string, status?: OrderStatus) =>
     prisma.order.findMany({
       where: { customerId, ...(status ? { status } : {}) },
-      include: { items: true, payment: true, shop: true },
+      include: {
+        items: true,
+        payment: true,
+        shop: true,
+        captain: {
+          select: {
+            id: true,
+            name: true,
+            mobile: true
+          }
+        }
+      },
       orderBy: { createdAt: "desc" }
     }),
   listByShop: (shopId: string) =>
     prisma.order.findMany({
       where: { shopId },
-      include: { items: true, customer: true, payment: true, captain: true },
+      include: { items: true, customer: true, payment: true, captain: true, address: true },
       orderBy: { createdAt: "desc" }
     }),
   updateOrder: (id: string, data: Prisma.OrderUncheckedUpdateInput, tx?: Prisma.TransactionClient) =>

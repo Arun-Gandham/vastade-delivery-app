@@ -1,15 +1,13 @@
 export const addressTypes = ["HOME", "WORK", "OTHER"] as const;
 export const orderStatuses = [
-  "PLACED",
-  "CONFIRMED",
-  "PACKING",
+  "PENDING",
+  "ACCEPTED",
+  "CAPTAIN_ASSIGNED",
   "READY_FOR_PICKUP",
-  "ASSIGNED_TO_CAPTAIN",
-  "OUT_FOR_DELIVERY",
+  "PICKED_UP",
   "DELIVERED",
   "CANCELLED",
-  "FAILED",
-  "REFUNDED",
+  "REJECTED",
 ] as const;
 export const paymentModes = ["COD", "UPI_MANUAL", "RAZORPAY"] as const;
 export const paymentStatuses = [

@@ -23,16 +23,14 @@ enum AddressType {
 }
 
 enum OrderStatus {
-  PLACED
-  CONFIRMED
-  PACKING
+  PENDING
+  ACCEPTED
+  CAPTAIN_ASSIGNED
   READY_FOR_PICKUP
-  ASSIGNED_TO_CAPTAIN
-  OUT_FOR_DELIVERY
+  PICKED_UP
   DELIVERED
   CANCELLED
-  FAILED
-  REFUNDED
+  REJECTED
 }
 
 enum PaymentMode {
@@ -364,7 +362,9 @@ model Order {
   cancelReason   String?
   placedAt       DateTime
   confirmedAt    DateTime?
+  captainAcceptedAt DateTime?
   packedAt       DateTime?
+  readyForPickupAt DateTime?
   pickedUpAt     DateTime?
   deliveredAt    DateTime?
   cancelledAt    DateTime?

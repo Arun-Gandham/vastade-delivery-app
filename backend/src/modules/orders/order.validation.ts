@@ -24,18 +24,20 @@ export const updateOrderStatusSchema = z.object({
   params: z.object({ orderId: z.string().uuid() }),
   body: z.object({
     status: z.enum([
-      "CONFIRMED",
-      "PACKING",
+      "ACCEPTED",
+      "CAPTAIN_ASSIGNED",
       "READY_FOR_PICKUP",
-      "ASSIGNED_TO_CAPTAIN",
-      "OUT_FOR_DELIVERY",
+      "PICKED_UP",
       "DELIVERED",
       "CANCELLED",
-      "FAILED",
-      "REFUNDED"
+      "REJECTED"
     ]),
     remarks: z.string().optional()
   })
+});
+
+export const orderActionSchema = z.object({
+  params: z.object({ orderId: z.string().uuid() })
 });
 
 export const captainRejectSchema = z.object({

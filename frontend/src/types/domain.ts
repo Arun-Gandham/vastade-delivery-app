@@ -209,6 +209,29 @@ export type CaptainEarning = {
   createdAt?: string;
 };
 
+export type CaptainOrder = {
+  id: string;
+  orderId: string;
+  deliveryTaskId: string;
+  orderNumber: string;
+  status: OrderStatus;
+  pickupAddress: string;
+  dropAddress: string;
+  amount: number | string;
+  deliveryFee: number | string;
+  distanceKm?: number | null;
+  distanceToPickupKm?: number | null;
+  createdAt?: string;
+  updatedAt?: string;
+  captainAcceptedAt?: string | null;
+  readyForPickupAt?: string | null;
+  pickedUpAt?: string | null;
+  deliveredAt?: string | null;
+  customer?: Pick<User, "id" | "name" | "mobile">;
+  shop?: Pick<Shop, "id" | "name" | "mobile">;
+  captain?: Pick<User, "id" | "name" | "mobile"> | null;
+};
+
 export type DeliveryTask = {
   id: string;
   taskType: string;

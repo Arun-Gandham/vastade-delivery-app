@@ -1,5 +1,14 @@
 # Frontend Changelog
 
+## 2026-04-27
+
+### Changed
+- Expanded the captain-flow and public tracking documentation to reflect the intended real-time delivery UX.
+- Documented captain dashboard behavior as a nearby task inbox with pickup/drop map preview, offer countdown, accept/reject actions, and immediate task removal when another captain accepts first.
+- Clarified that captain task screens must render from generic delivery-task payloads and keep realtime subscriptions for offer arrival, expiry, removal, and task-status updates.
+- Clarified that ready-for-pickup and ready-for-delivery tasks should be pushed live over sockets to all eligible nearby captains within radius.
+- Implemented captain-side Socket.IO subscription and periodic live location sync in the shared captain shell so nearby offers can appear without manual refresh.
+
 ## 2026-04-26
 
 ### Added

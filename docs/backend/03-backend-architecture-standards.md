@@ -150,4 +150,55 @@ orders module should create grocery delivery tasks but should not own generic ca
 shop modules may expose tracking for their own orders but must not create or approve captains
 ```
 
+## Realtime assignment architecture plan
+
+```txt
+1. admin or shop accepts an order, or parcel flow marks a parcel dispatchable
+2. backend creates delivery_task with pickup and drop coordinates
+3. matching service loads nearby captains from latest captain_locations
+4. filter captains by approved + online + not busy + within configured radius
+5. rank by captain-to-pickup distance
+6. create captain_task_offers for all eligible nearby captains within the configured radius
+7. emit order:available-for-captains over Socket.IO to eligible captain rooms or captains:online
+8. each captain dashboard shows the same nearby request independently and in real time
+9. first accept call enters transaction and locks the delivery_task row
+10. backend writes winner captainId and task status accepted, then sets order status CAPTAIN_ASSIGNED
+11. competing offers are expired or cancelled
+12. losing captain rooms receive immediate order:remove-from-available event
+13. customer, shop, and admin rooms receive order:assigned, order:ready-for-pickup, order:picked-up, and order:delivered events
+```
+
+## Socket room model
+
+```txt
+captain:{captainId}
+captains:online
+user:{customerId}
+shop:{shopId}
+admin
+admin:{adminId}
+delivery-task:{taskId}
+order:{orderId}
+```
+
+Room responsibilities:
+
+```txt
+captain room receives offers, offer expiry, task removal, active task updates, and earnings updates
+delivery-task room receives status changes and live captain location
+customer and shop rooms receive only post-assignment tracking-safe payloads
+admin room receives all operational events for monitoring
+```
+
+## Captain dashboard contract plan
+
+```txt
+captain dashboard should be built as a task inbox plus active task workspace
+pending nearby offers are separate from accepted active task
+new ready-for-pickup or ready-for-delivery tasks should appear live without captain refresh
+offer cards should include pickup/drop summaries, map preview, ETA, earning, and countdown
+accepted task view should include pickup map, drop map, live navigation intent, and status action buttons
+if another captain accepts first, the offer must disappear in real time without a refresh
+```
+
 ---

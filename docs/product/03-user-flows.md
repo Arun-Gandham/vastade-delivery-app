@@ -110,7 +110,7 @@ SUPER_ADMIN   -> /super-admin/dashboard
 3. Shop accepts and prepares the order.
 4. Shop marks the order ready for pickup.
 5. Backend creates a generic `delivery_task` with `taskType = grocery`.
-6. Nearby approved online captains receive a real-time task offer.
+6. All approved online nearby captains within the configured radius receive the same real-time task offer over sockets.
 7. First valid captain acceptance assigns the task.
 8. Captain reaches pickup, picks up, reaches drop, and delivers.
 9. Order status and delivery task status stay synchronized.
@@ -124,7 +124,7 @@ SUPER_ADMIN   -> /super-admin/dashboard
    - `taskType = parcel`
    - `referenceTable = parcel_orders`
    - `referenceId = parcel_order.id`
-4. Nearby approved online captains receive offers.
+4. All approved online nearby captains within the configured radius receive the same real-time parcel offer over sockets.
 5. Captain accepts, picks up, and delivers the parcel.
 6. Customer tracks the parcel through the delivery-task lifecycle.
 
@@ -160,34 +160,83 @@ SUPER_ADMIN   -> /super-admin/dashboard
 5. Every action creates a `captain_verification_log`.
 6. Only approved captains can go online and receive task offers.
 
-## Real-time task assignment flow
+## Real-time captain assignment flow
 
-1. System creates a `delivery_task` when an order or parcel becomes dispatchable.
-2. Backend finds nearby captains who are:
+1. Customer places the order and the order starts in `PENDING`.
+2. Admin or shop accepts the order and the order moves to `ACCEPTED`.
+3. System creates or reuses the linked `delivery_task`.
+4. Backend finds nearby captains who are:
    - approved
    - online
    - not busy
    - within configured radius
-3. Backend ranks captains by pickup distance.
-4. Backend creates `captain_task_offers`.
-5. Realtime layer emits:
-   - `delivery_task_created`
-   - `captain:task_offer_received`
-6. Captain app shows:
+5. Backend ranks captains by pickup distance.
+6. Backend creates one `captain_task_offer` per eligible nearby captain.
+7. Socket.IO or the realtime socket layer emits:
+   - `order:available-for-captains`
+8. Captain app shows:
    - task type
    - pickup and drop
    - captain-to-pickup distance
    - pickup-to-drop distance
    - estimated earning
    - estimated time
-   - accept and reject actions
-7. First valid acceptance wins inside a DB transaction.
-8. Backend assigns `captainId`, marks task `accepted`, marks captain `busy`, and expires competing offers.
-9. Backend emits:
-   - `delivery_task_assigned`
-   - `captain:task_accepted`
-   - `delivery_status_updated`
-   - `order_out_for_delivery` when applicable
+   - accept action
+   - pickup map marker
+   - drop map marker
+   - route preview or straight-line fallback
+9. Every eligible nearby captain within the configured radius should see the same offer at the same time in the dashboard inbox.
+10. First valid acceptance wins inside a DB transaction using an atomic `captainId IS NULL` update.
+11. Backend assigns the winning captain, moves the order to `CAPTAIN_ASSIGNED`, marks captain `busy`, and expires competing offers.
+12. The winning captain keeps the order in the active-delivery list.
+13. The same order is removed in real time from every other captain dashboard or captain app through `order:remove-from-available`.
+14. If another captain tries to accept after the winner commits, the API returns `409 Order already accepted by another captain.`
+15. Backend emits:
+   - `order:assigned`
+   - `order:ready-for-pickup`
+   - `order:picked-up`
+   - `order:delivered`
+
+## Captain dashboard nearby-request flow
+
+1. Captain opens the dashboard while online.
+2. Client sends `captain:connect` and the latest captain location.
+3. Dashboard loads:
+   - current availability status
+   - active accepted task if any
+   - pending nearby task offers
+   - recent completed or failed tasks
+4. When a new nearby delivery task is offered, the dashboard should surface:
+   - a high-priority request card
+   - pickup location summary
+   - drop location summary
+   - map preview with pickup and drop markers
+   - captain-to-pickup distance
+   - pickup-to-drop distance
+   - estimated earning
+   - accept and reject buttons
+   - visible offer countdown
+5. If another captain accepts the task first, the card should disappear immediately and may show a short `Task no longer available` state.
+6. If the current captain accepts first, the task moves from the offer inbox to the active task workspace.
+
+## Live map and tracking flow
+
+1. Each delivery task stores pickup latitude/longitude and drop latitude/longitude.
+2. Captain client sends periodic live location updates while online and while on an active task.
+3. Backend stores current captain location and may append history points for analytics or replay.
+4. After assignment, the following surfaces can receive live location and task status:
+   - captain dashboard
+   - customer tracking page
+   - shop delivery tracking view
+   - admin delivery monitoring view
+5. Before assignment, no customer or shop map should show captain identity or captain location.
+6. After assignment or after pickup, tracking policy may expose:
+   - captain live marker
+   - pickup marker
+   - drop marker
+   - current task status
+   - ETA
+7. Captain legal documents are never part of tracking payloads.
 
 ## Captain task lifecycle
 
@@ -234,6 +283,15 @@ Shop responsibilities:
    - task assigned
    - out for delivery
    - delivered
+
+## Real-time consistency rules
+
+1. The same delivery request should be broadcast to all eligible nearby captains in parallel through sockets.
+2. Only one captain may win acceptance.
+3. Acceptance must use row locking or equivalent transaction protection.
+4. Once accepted, all competing offers must be marked `expired` or `cancelled`.
+5. Other captains must receive an immediate removal or expiry event so stale task cards do not remain visible.
+6. If the assigned captain fails or the task is cancelled, the system may reopen the task and rerun nearby matching from the pickup point.
 
 ## Security flow notes
 

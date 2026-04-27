@@ -1,5 +1,99 @@
 # Changelog
 
+## 2026-04-27 - Order accept to captain-claim flow refresh
+
+### Type
+Full-stack
+
+### Status
+Implemented
+
+### Summary
+The order and captain flow now starts with admin or shop acceptance, broadcasts accepted orders to eligible captains in real time, and uses an atomic first-accept-wins captain claim. Accepted orders disappear from other captain dashboards immediately, assigned captain details flow back to admin and shop pages in real time, and the delivery status path is now `PENDING -> ACCEPTED -> CAPTAIN_ASSIGNED -> READY_FOR_PICKUP -> PICKED_UP -> DELIVERED`.
+
+### Files changed
+- backend/prisma/schema.prisma
+- backend/prisma/migrations/20260427173000_order_captain_accept_flow/migration.sql
+- backend/src/constants/error-codes.ts
+- backend/src/constants/order.ts
+- backend/src/docs/swagger.ts
+- backend/src/modules/captains/captain.service.ts
+- backend/src/modules/dashboard/dashboard.repository.ts
+- backend/src/modules/delivery-tasks/delivery-task.repository.ts
+- backend/src/modules/delivery-tasks/delivery-task.service.ts
+- backend/src/modules/orders/order.controller.ts
+- backend/src/modules/orders/order.repository.ts
+- backend/src/modules/orders/order.routes.ts
+- backend/src/modules/orders/order.service.ts
+- backend/src/modules/orders/order.validation.ts
+- backend/src/realtime/socket-gateway.ts
+- frontend/src/app/(admin)/admin/orders/[orderId]/page.tsx
+- frontend/src/app/(captain)/captain/orders/[orderId]/page.tsx
+- frontend/src/app/(captain)/captain/orders/page.tsx
+- frontend/src/app/(captain)/captain/page.tsx
+- frontend/src/app/(customer)/customer/orders/[orderId]/page.tsx
+- frontend/src/app/(customer)/customer/orders/page.tsx
+- frontend/src/app/(shop-owner)/shop-owner/shops/[shopId]/orders/[orderId]/page.tsx
+- frontend/src/components/captain/captain-task-card.tsx
+- frontend/src/components/ui/status-badge.tsx
+- frontend/src/constants/enums.ts
+- frontend/src/constants/query-keys.ts
+- frontend/src/features/captain/captain.api.ts
+- frontend/src/features/captain/captain.hooks.ts
+- frontend/src/features/captain/use-captain-realtime.ts
+- frontend/src/features/orders/order.api.ts
+- frontend/src/features/orders/order.hooks.ts
+- frontend/src/types/domain.ts
+- docs/product/03-user-flows.md
+- docs/product/04-api-contracts.md
+- docs/product/05-business-rules-statuses.md
+- docs/backend/03-backend-architecture-standards.md
+
+## 2026-04-27 - Captain realtime socket implementation
+
+### Type
+Full-stack
+
+### Status
+Implemented
+
+### Summary
+Implemented the first working realtime captain dispatch layer using Socket.IO. Delivery tasks created when orders move to `READY_FOR_PICKUP` can now be pushed live to eligible nearby captains, and losing captains receive immediate task removal when another captain accepts first. Captain pages also start periodic live location sync while online.
+
+### Files changed
+- backend/src/realtime/socket-gateway.ts
+- backend/src/server.ts
+- backend/src/modules/delivery-tasks/delivery-task.repository.ts
+- backend/src/modules/delivery-tasks/delivery-task.service.ts
+- backend/src/modules/captains/captain.service.ts
+- frontend/src/lib/realtime/socket-client.ts
+- frontend/src/features/captain/use-captain-realtime.ts
+- frontend/src/components/layout/captain-app-shell.tsx
+
+## 2026-04-27 - Captain realtime dispatch doc expansion
+
+### Type
+Documentation
+
+### Status
+Implemented
+
+### Summary
+Captain dispatch and tracking documentation was expanded so the real-time nearby-assignment plan is explicit across the active docs set. The updated plan now describes captain dashboard request inbox behavior, pickup and drop map requirements, parallel captain offer visibility, first-accept-wins locking, real-time offer removal for losing captains, and live tracking payload expectations for captain, customer, shop, and admin surfaces.
+
+### Updated docs
+- README.md
+- docs/product/03-user-flows.md
+- docs/product/04-api-contracts.md
+- docs/backend/02-database-schema.md
+- docs/backend/03-backend-architecture-standards.md
+- docs/backend/04-infrastructure-security-env.md
+- docs/frontend/04-routes-pages.md
+- docs/frontend/05-api-integration.md
+
+### Follow-up clarification
+- Strengthened the wording so ready-for-pickup or ready-for-delivery tasks are documented as socket-broadcast offers to all eligible nearby captains within radius, not only a limited batch.
+
 ## 2026-04-26 - Indtula pilot test changes
 
 ### Type

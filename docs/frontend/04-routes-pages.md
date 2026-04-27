@@ -69,6 +69,14 @@ The current unified Next.js app still hosts captain screens.
 The backend APIs are already designed so captain flows can move to a dedicated captain web or mobile client later.
 ```
 
+Captain page intent:
+
+```txt
+/captain -> dashboard with online toggle, nearby task inbox, active accepted task, and quick earnings snapshot
+/captain/orders -> broader task list including offered, active, completed, and failed tasks
+/captain/orders/[orderId] -> task detail with pickup/drop map, tracking details, and task status actions
+```
+
 ## Shop owner routes
 
 ```txt
@@ -182,4 +190,6 @@ Captain registration should collect identity, vehicle, license, bank, and agreem
 Captain task screens should be modeled around generic delivery tasks, not only grocery orders
 Captain pages should avoid reusing customer order cards and customer order-detail assumptions
 Captain offer screens should show earning estimate, pickup/drop, and accept or reject actions
+Captain task screens should support pickup and drop map preview using task coordinates
+Pending offer cards should disappear in real time if another captain accepts first
 ```

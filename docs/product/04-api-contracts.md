@@ -194,7 +194,7 @@ Order endpoints:
 
 ```txt
 POST /orders
-GET /orders/my?status=PLACED&page=1&limit=20
+GET /orders/my?status=PENDING&page=1&limit=20
 GET /orders/:orderId
 POST /orders/:orderId/cancel
 GET /orders/:orderId/delivery
@@ -206,26 +206,57 @@ Shop-owner order endpoints:
 ```txt
 GET /shop-owner/shops/:shopId/orders
 GET /shop-owner/shops/:shopId/orders/:orderId
-POST /shop-owner/orders/:orderId/confirm
-POST /shop-owner/orders/:orderId/mark-packing
-POST /shop-owner/orders/:orderId/ready-for-pickup
+PATCH /shop-owner/orders/:orderId/accept
+PATCH /shop-owner/orders/:orderId/ready-for-pickup
 POST /shop-owner/orders/:orderId/cancel
 GET /shop/orders/:orderId/delivery
 GET /shop/delivery-tasks/:taskId
 GET /shop/delivery-tasks/:taskId/tracking
 ```
 
-Captain task endpoints:
+Captain order endpoints:
 
 ```txt
-GET /captain/tasks
-POST /captain/tasks/:taskId/accept
-POST /captain/tasks/:taskId/reject
-POST /captain/tasks/:taskId/reached-pickup
-POST /captain/tasks/:taskId/picked-up
-POST /captain/tasks/:taskId/reached-drop
-POST /captain/tasks/:taskId/delivered
-POST /captain/tasks/:taskId/failed
+GET /captain/orders/available
+GET /captain/orders/active
+PATCH /captain/orders/:orderId/accept
+PATCH /captain/orders/:orderId/picked-up
+PATCH /captain/orders/:orderId/delivered
+```
+
+Captain task list response shape:
+
+```json
+{
+  "id": "task_uuid",
+  "taskType": "grocery",
+  "status": "offered_to_captains",
+  "offerStatus": "sent",
+  "referenceTable": "orders",
+  "referenceId": "order_uuid",
+  "pickupAddress": "Shop address line",
+  "pickupLatitude": 17.4412,
+  "pickupLongitude": 78.3912,
+  "dropAddress": "Customer address line",
+  "dropLatitude": 17.4522,
+  "dropLongitude": 78.4031,
+  "captainToPickupDistanceKm": 1.4,
+  "pickupToDropDistanceKm": 4.8,
+  "estimatedPickupMinutes": 6,
+  "estimatedDeliveryMinutes": 18,
+  "estimatedEarning": 72,
+  "offerExpiresAt": "2026-04-27T10:45:00.000Z",
+  "map": {
+    "pickup": {
+      "lat": 17.4412,
+      "lng": 78.3912
+    },
+    "drop": {
+      "lat": 17.4522,
+      "lng": 78.4031
+    }
+  }
+}
 ```
 
 Captain location update:
@@ -237,6 +268,33 @@ Captain location update:
   "heading": 120,
   "speed": 30
 }
+```
+
+Captain task accept success notes:
+
+```txt
+winner captain receives assigned order payload
+losing captains receive realtime remove-from-available update
+customer, shop, and admin receive assigned and delivery-status events
+```
+
+Suggested realtime delivery socket events:
+
+```txt
+order:available-for-captains
+order:assigned
+order:remove-from-available
+order:ready-for-pickup
+order:picked-up
+order:delivered
+```
+
+Realtime dispatch rule:
+
+```txt
+when admin or shop accepts an order, backend should create or reuse the order delivery_task and broadcast the offer over sockets to all eligible nearby captains
+the same order may be visible to multiple captains at once
+first successful acceptance wins and removes the order from every other captain dashboard
 ```
 
 Admin captain and delivery endpoints:
@@ -253,6 +311,46 @@ GET /admin/captains/:id/deliveries
 GET /admin/captains/:id/earnings
 GET /admin/delivery-tasks
 GET /admin/delivery-tasks/:id
+```
+
+Tracking read models:
+
+```txt
+GET /orders/:orderId/tracking
+GET /shop/delivery-tasks/:taskId/tracking
+GET /admin/delivery-tasks/:id
+```
+
+Tracking payload should expose:
+
+```json
+{
+  "taskId": "task_uuid",
+  "status": "picked_up",
+  "pickup": {
+    "address": "Pickup address",
+    "latitude": 17.4412,
+    "longitude": 78.3912
+  },
+  "drop": {
+    "address": "Drop address",
+    "latitude": 17.4522,
+    "longitude": 78.4031
+  },
+  "captain": {
+    "name": "Ravi Kumar",
+    "phone": "98xxxxxx10",
+    "vehicleType": "bike",
+    "vehicleNumberMasked": "TS09****1234"
+  },
+  "liveLocation": {
+    "latitude": 17.447,
+    "longitude": 78.396,
+    "heading": 100,
+    "speed": 24,
+    "updatedAt": "2026-04-27T10:44:30.000Z"
+  }
+}
 ```
 
 Parcel endpoints:

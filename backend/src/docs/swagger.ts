@@ -745,26 +745,17 @@ export const swaggerSpec = {
         responses: { "200": { description: "OK" } }
       }
     },
-    "/shop-owner/orders/{orderId}/confirm": {
-      post: {
+    "/shop-owner/orders/{orderId}/accept": {
+      patch: {
         tags: ["Orders"],
-        summary: "Confirm order",
-        security: bearerAuth,
-        parameters: [{ in: "path", name: "orderId", required: true, schema: { type: "string", format: "uuid" } }],
-        responses: { "200": { description: "OK" } }
-      }
-    },
-    "/shop-owner/orders/{orderId}/mark-packing": {
-      post: {
-        tags: ["Orders"],
-        summary: "Mark order packing",
+        summary: "Accept order",
         security: bearerAuth,
         parameters: [{ in: "path", name: "orderId", required: true, schema: { type: "string", format: "uuid" } }],
         responses: { "200": { description: "OK" } }
       }
     },
     "/shop-owner/orders/{orderId}/ready-for-pickup": {
-      post: {
+      patch: {
         tags: ["Orders"],
         summary: "Mark ready for pickup",
         security: bearerAuth,
@@ -826,6 +817,24 @@ export const swaggerSpec = {
       get: {
         tags: ["Orders"],
         summary: "Admin order details",
+        security: bearerAuth,
+        parameters: [{ in: "path", name: "orderId", required: true, schema: { type: "string", format: "uuid" } }],
+        responses: { "200": { description: "OK" } }
+      }
+    },
+    "/admin/orders/{orderId}/accept": {
+      patch: {
+        tags: ["Orders"],
+        summary: "Admin accept order",
+        security: bearerAuth,
+        parameters: [{ in: "path", name: "orderId", required: true, schema: { type: "string", format: "uuid" } }],
+        responses: { "200": { description: "OK" } }
+      }
+    },
+    "/admin/orders/{orderId}/ready-for-pickup": {
+      patch: {
+        tags: ["Orders"],
+        summary: "Admin mark ready for pickup",
         security: bearerAuth,
         parameters: [{ in: "path", name: "orderId", required: true, schema: { type: "string", format: "uuid" } }],
         responses: { "200": { description: "OK" } }
@@ -965,16 +974,24 @@ export const swaggerSpec = {
         responses: { "200": { description: "OK" } }
       }
     },
-    "/captains/me/orders": {
+    "/captains/orders/available": {
       get: {
         tags: ["Captains"],
-        summary: "List captain orders",
+        summary: "List available captain orders",
+        security: bearerAuth,
+        responses: { "200": { description: "OK" } }
+      }
+    },
+    "/captains/orders/active": {
+      get: {
+        tags: ["Captains"],
+        summary: "List active captain orders",
         security: bearerAuth,
         responses: { "200": { description: "OK" } }
       }
     },
     "/captains/orders/{orderId}/accept": {
-      post: {
+      patch: {
         tags: ["Captains"],
         summary: "Captain accept order",
         security: bearerAuth,
@@ -1006,7 +1023,7 @@ export const swaggerSpec = {
       }
     },
     "/captains/orders/{orderId}/picked-up": {
-      post: {
+      patch: {
         tags: ["Captains"],
         summary: "Captain mark order picked up",
         security: bearerAuth,
@@ -1015,7 +1032,7 @@ export const swaggerSpec = {
       }
     },
     "/captains/orders/{orderId}/delivered": {
-      post: {
+      patch: {
         tags: ["Captains"],
         summary: "Captain deliver order",
         security: bearerAuth,

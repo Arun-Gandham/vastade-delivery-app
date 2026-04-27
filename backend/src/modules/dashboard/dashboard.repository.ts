@@ -21,7 +21,13 @@ export const dashboardRepository = {
         prisma.user.count({ where: { role: UserRole.CUSTOMER, isActive: true } }),
         prisma.shop.count({ where: { isActive: true } }),
         prisma.captain.count({ where: { isOnline: true, isAvailable: true } }),
-        prisma.order.count({ where: { status: { in: [OrderStatus.PLACED, OrderStatus.CONFIRMED, OrderStatus.PACKING] } } }),
+        prisma.order.count({
+          where: {
+            status: {
+              in: [OrderStatus.PENDING, OrderStatus.ACCEPTED, OrderStatus.CAPTAIN_ASSIGNED, OrderStatus.READY_FOR_PICKUP]
+            }
+          }
+        }),
         prisma.order.count({ where: { status: OrderStatus.CANCELLED } })
       ]);
 
@@ -56,7 +62,9 @@ export const dashboardRepository = {
         prisma.order.count({
           where: {
             shopId,
-            status: { in: [OrderStatus.PLACED, OrderStatus.CONFIRMED, OrderStatus.PACKING] }
+            status: {
+              in: [OrderStatus.PENDING, OrderStatus.ACCEPTED, OrderStatus.CAPTAIN_ASSIGNED, OrderStatus.READY_FOR_PICKUP]
+            }
           }
         }),
         prisma.order.count({ where: { shopId, status: OrderStatus.DELIVERED } }),

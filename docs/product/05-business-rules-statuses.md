@@ -7,16 +7,14 @@ This file is the shared rules reference for orders, captains, delivery tasks, pa
 Order status:
 
 ```txt
-PLACED
-CONFIRMED
-PACKING
+PENDING
+ACCEPTED
+CAPTAIN_ASSIGNED
 READY_FOR_PICKUP
-ASSIGNED_TO_CAPTAIN
-OUT_FOR_DELIVERY
+PICKED_UP
 DELIVERED
 CANCELLED
-FAILED
-REFUNDED
+REJECTED
 ```
 
 Payment mode:
@@ -106,28 +104,27 @@ Order-status history should be recorded
 Order status progression:
 
 ```txt
-PLACED
--> CONFIRMED
--> PACKING
+PENDING
+-> ACCEPTED
+-> CAPTAIN_ASSIGNED
 -> READY_FOR_PICKUP
--> ASSIGNED_TO_CAPTAIN
--> OUT_FOR_DELIVERY
+-> PICKED_UP
 -> DELIVERED
 ```
 
 Cancellation allowed from:
 
 ```txt
-PLACED
-CONFIRMED
-PACKING
+PENDING
+ACCEPTED
+CAPTAIN_ASSIGNED
 READY_FOR_PICKUP
 ```
 
 Cancellation blocked after:
 
 ```txt
-OUT_FOR_DELIVERY
+PICKED_UP
 DELIVERED
 ```
 
@@ -189,7 +186,7 @@ Captains are assigned to delivery tasks, not only directly to grocery orders
 Task creation rules:
 
 ```txt
-Grocery task is created when a prepared order becomes ready for pickup
+Grocery task is created when admin or shop accepts the order
 Parcel task is created when a parcel order is submitted and accepted by business rules
 captainId is nullable until assignment succeeds
 pickup/drop coordinates should be stored when available
@@ -202,10 +199,11 @@ Captain must be APPROVED
 Captain must be ONLINE
 Captain must not be BUSY
 Captain must be within configured matching radius
-Nearest captains should receive offers first
+Accepted grocery orders become visible to every eligible captain at the same time
 First valid acceptance wins
 Competing offers must expire or cancel
 Acceptance must use transaction and lock semantics
+Atomic update must fail with `Order already accepted by another captain.` when another captain wins first
 ```
 
 Captain task-status update rules:

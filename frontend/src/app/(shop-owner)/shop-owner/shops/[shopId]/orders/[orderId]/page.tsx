@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect } from "react";
 import { useParams } from "next/navigation";
 import { DashboardShell } from "@/components/layout/dashboard-shell";
 import { DataState } from "@/components/shared/data-state";
@@ -12,6 +13,8 @@ import { useOrderMutations } from "@/features/orders/order.hooks";
 import { getErrorMessage } from "@/lib/utils/errors";
 import { useQuery } from "@tanstack/react-query";
 import { queryKeys } from "@/constants/query-keys";
+import { authStorage } from "@/lib/storage/auth-storage";
+import { getRealtimeSocket } from "@/lib/realtime/socket-client";
 
 export default function ShopOrderDetailPage() {
   const params = useParams<{ shopId: string; orderId: string }>();
@@ -20,6 +23,30 @@ export default function ShopOrderDetailPage() {
     queryFn: () => orderApi.shopOrderDetails(params.shopId, params.orderId),
   });
   const mutations = useOrderMutations();
+
+  useEffect(() => {
+    const token = authStorage.getAccessToken();
+    if (!token) {
+      return;
+    }
+
+    const socket = getRealtimeSocket(token);
+    socket.emit("subscribe:order", params.orderId);
+    const refresh = () => void orderQuery.refetch();
+
+    socket.on("order:assigned", refresh);
+    socket.on("order:ready-for-pickup", refresh);
+    socket.on("order:picked-up", refresh);
+    socket.on("order:delivered", refresh);
+
+    return () => {
+      socket.emit("unsubscribe:order", params.orderId);
+      socket.off("order:assigned", refresh);
+      socket.off("order:ready-for-pickup", refresh);
+      socket.off("order:picked-up", refresh);
+      socket.off("order:delivered", refresh);
+    };
+  }, [orderQuery, params.orderId]);
 
   return (
     <DashboardShell
@@ -53,13 +80,24 @@ export default function ShopOrderDetailPage() {
               ))}
             </Card>
             <Card className="space-y-3">
-              <Button onClick={() => mutations.confirmShopOrder.mutate(orderQuery.data!.id)}>Confirm</Button>
-              <Button variant="outline" onClick={() => mutations.markPacking.mutate(orderQuery.data!.id)}>
-                Mark Packing
-              </Button>
-              <Button variant="outline" onClick={() => mutations.readyForPickup.mutate(orderQuery.data!.id)}>
-                Ready for Pickup
-              </Button>
+              {orderQuery.data.status === "PENDING" ? (
+                <Button onClick={() => mutations.confirmShopOrder.mutate(orderQuery.data!.id)}>Accept Order</Button>
+              ) : null}
+              {orderQuery.data.status === "ACCEPTED" ? (
+                <p className="text-sm text-[var(--color-text-muted)]">Waiting for a captain to accept this order.</p>
+              ) : null}
+              {orderQuery.data.status === "CAPTAIN_ASSIGNED" ? (
+                <Button variant="outline" onClick={() => mutations.readyForPickup.mutate(orderQuery.data!.id)}>
+                  Ready for Pickup
+                </Button>
+              ) : null}
+              {orderQuery.data.captain ? (
+                <div className="rounded-[var(--radius-md)] border border-[var(--color-border)] p-3 text-sm">
+                  <p className="font-medium text-[#111827]">Assigned Captain</p>
+                  <p className="text-[var(--color-text-muted)]">{orderQuery.data.captain.name}</p>
+                  <p className="text-[var(--color-text-muted)]">{orderQuery.data.captain.mobile}</p>
+                </div>
+              ) : null}
               <Button
                 variant="danger"
                 onClick={() =>

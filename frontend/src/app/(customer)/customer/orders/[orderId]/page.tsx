@@ -12,7 +12,7 @@ import { useOrderMutations, useOrderQuery } from "@/features/orders/order.hooks"
 import { getErrorMessage } from "@/lib/utils/errors";
 import { formatDateTime } from "@/lib/utils/format";
 
-const cancellableStatuses = ["PLACED", "CONFIRMED", "PACKING"];
+const cancellableStatuses = ["PENDING", "ACCEPTED"];
 
 export default function CustomerOrderDetailPage() {
   const params = useParams<{ orderId: string }>();

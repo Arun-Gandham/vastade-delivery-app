@@ -41,11 +41,13 @@ const ensureTransition = (current: OrderStatus, next: OrderStatus) => {
 
 const setTimestampField = (status: OrderStatus) => {
   switch (status) {
-    case OrderStatus.CONFIRMED:
+    case OrderStatus.ACCEPTED:
       return { confirmedAt: new Date() };
-    case OrderStatus.PACKING:
-      return { packedAt: new Date() };
-    case OrderStatus.OUT_FOR_DELIVERY:
+    case OrderStatus.CAPTAIN_ASSIGNED:
+      return { captainAcceptedAt: new Date() };
+    case OrderStatus.READY_FOR_PICKUP:
+      return { readyForPickupAt: new Date() };
+    case OrderStatus.PICKED_UP:
       return { pickedUpAt: new Date() };
     case OrderStatus.DELIVERED:
       return { deliveredAt: new Date() };
@@ -119,7 +121,7 @@ export const orderService = {
             customerId,
             shopId: input.shopId,
             addressId: input.addressId,
-            status: OrderStatus.PLACED,
+            status: OrderStatus.PENDING,
             paymentMode: input.paymentMode,
             paymentStatus:
               input.paymentMode === PaymentMode.COD
@@ -199,7 +201,7 @@ export const orderService = {
         await orderRepository.createStatusHistory(
           {
             orderId: order.id,
-            newStatus: OrderStatus.PLACED,
+            newStatus: OrderStatus.PENDING,
             changedBy: customerId,
             remarks: "Order placed by customer"
           },
@@ -276,6 +278,13 @@ export const orderService = {
   ) {
     const order = await this.details(orderId);
     await shopService.assertShopAccess(userId, role, order.shopId);
+    if (nextStatus === OrderStatus.READY_FOR_PICKUP && !order.captainId) {
+      throw new AppError(
+        "Assigning a captain is required before marking ready for pickup",
+        StatusCodes.BAD_REQUEST,
+        ERROR_CODES.INVALID_ORDER_STATUS
+      );
+    }
     ensureTransition(order.status, nextStatus);
 
     return prisma.$transaction(async (tx) => {
@@ -310,8 +319,11 @@ export const orderService = {
 
       return updated;
     }).then(async (updated) => {
-      if (nextStatus === OrderStatus.READY_FOR_PICKUP) {
+      if (nextStatus === OrderStatus.ACCEPTED) {
         await deliveryTaskService.createForOrder(orderId);
+      }
+      if (nextStatus === OrderStatus.READY_FOR_PICKUP) {
+        await deliveryTaskService.markOrderReadyForPickup(orderId);
       }
       return updated;
     });
@@ -333,7 +345,7 @@ export const orderService = {
   async assignCaptain(assignerId: string, role: UserRole, orderId: string, captainId: string) {
     const order = await this.details(orderId);
     await shopService.assertShopAccess(assignerId, role, order.shopId);
-    if (order.status !== OrderStatus.READY_FOR_PICKUP) {
+    if (order.status !== OrderStatus.ACCEPTED) {
       throw new AppError(
         "Invalid order status",
         StatusCodes.BAD_REQUEST,
@@ -366,14 +378,14 @@ export const orderService = {
       );
       await orderRepository.updateOrder(
         orderId,
-        { status: OrderStatus.ASSIGNED_TO_CAPTAIN, captainId },
+        { status: OrderStatus.CAPTAIN_ASSIGNED, captainId, captainAcceptedAt: new Date() },
         tx
       );
       await orderRepository.createStatusHistory(
         {
           orderId,
           oldStatus: order.status,
-          newStatus: OrderStatus.ASSIGNED_TO_CAPTAIN,
+          newStatus: OrderStatus.CAPTAIN_ASSIGNED,
           changedBy: assignerId,
           remarks: "Captain assigned"
         },
@@ -397,6 +409,35 @@ export const orderService = {
 
     if (status === OrderStatus.CANCELLED) {
       return this.cancelOrder(order, remarks ?? "Cancelled by admin", adminId);
+    }
+    if (status === OrderStatus.REJECTED) {
+      return prisma.$transaction(async (tx) => {
+        const updated = await orderRepository.updateOrder(
+          orderId,
+          {
+            status: OrderStatus.REJECTED
+          },
+          tx
+        );
+        await orderRepository.createStatusHistory(
+          {
+            orderId,
+            oldStatus: order.status,
+            newStatus: OrderStatus.REJECTED,
+            changedBy: adminId,
+            remarks: remarks ?? "Rejected by admin"
+          },
+          tx
+        );
+        return updated;
+      });
+    }
+    if (status === OrderStatus.READY_FOR_PICKUP && !order.captainId) {
+      throw new AppError(
+        "Assigning a captain is required before marking ready for pickup",
+        StatusCodes.BAD_REQUEST,
+        ERROR_CODES.INVALID_ORDER_STATUS
+      );
     }
 
     ensureTransition(order.status, status);
@@ -428,110 +469,60 @@ export const orderService = {
         newValue: { status, remarks }
       });
       return updated;
+    }).then(async (updated) => {
+      if (status === OrderStatus.ACCEPTED) {
+        await deliveryTaskService.createForOrder(orderId);
+      }
+      if (status === OrderStatus.READY_FOR_PICKUP) {
+        await deliveryTaskService.markOrderReadyForPickup(orderId);
+      }
+      return updated;
     });
+  },
+
+  async adminAccept(adminId: string, orderId: string) {
+    return this.adminUpdateStatus(adminId, orderId, OrderStatus.ACCEPTED, "Accepted by admin/shop");
+  },
+
+  async adminReadyForPickup(adminId: string, orderId: string) {
+    return this.adminUpdateStatus(adminId, orderId, OrderStatus.READY_FOR_PICKUP, "Ready for pickup");
+  },
+
+  async captainAvailableOrders(captainUserId: string) {
+    return deliveryTaskService.listCaptainAvailableOrders(captainUserId);
+  },
+
+  async captainActiveOrders(captainUserId: string) {
+    return deliveryTaskService.listCaptainActiveOrders(captainUserId);
+  },
+
+  async captainAcceptAvailableOrder(captainUserId: string, orderId: string) {
+    return deliveryTaskService.captainAcceptOrder(captainUserId, orderId);
+  },
+
+  async captainPickedUpDelivery(captainUserId: string, orderId: string) {
+    return deliveryTaskService.captainPickedUpOrder(captainUserId, orderId);
+  },
+
+  async captainDeliveredOrder(captainUserId: string, orderId: string) {
+    return deliveryTaskService.captainDeliveredOrder(captainUserId, orderId);
   },
 
   async captainOrders(captainId: string) {
-    return prisma.order.findMany({
-      where: { captainId },
-      include: { items: true, address: true, shop: true, payment: true },
-      orderBy: { createdAt: "desc" }
-    });
+    return this.captainActiveOrders(captainId);
   },
 
   async captainAccept(captainId: string, orderId: string) {
-    const order = await this.details(orderId);
-    if (order.captainId !== captainId || order.status !== OrderStatus.ASSIGNED_TO_CAPTAIN) {
-      throw new AppError("Forbidden", StatusCodes.FORBIDDEN, ERROR_CODES.AUTH_FORBIDDEN);
-    }
-
-    await prisma.deliveryAssignment.updateMany({
-      where: { orderId, captainId },
-      data: {
-        status: DeliveryAssignmentStatus.ACCEPTED,
-        acceptedAt: new Date()
-      }
-    });
-    return this.details(orderId);
+    return this.captainAcceptAvailableOrder(captainId, orderId);
   },
 
   async captainReject(captainId: string, orderId: string, reason: string) {
-    const order = await this.details(orderId);
-    if (order.captainId !== captainId || order.status !== OrderStatus.ASSIGNED_TO_CAPTAIN) {
-      throw new AppError("Forbidden", StatusCodes.FORBIDDEN, ERROR_CODES.AUTH_FORBIDDEN);
-    }
-
-    return prisma.$transaction(async (tx) => {
-      await orderRepository.updateAssignment(
-        orderId,
-        captainId,
-        {
-          status: DeliveryAssignmentStatus.REJECTED
-        },
-        tx
-      );
-      await orderRepository.updateOrder(
-        orderId,
-        {
-          status: OrderStatus.READY_FOR_PICKUP,
-          captainId: null
-        },
-        tx
-      );
-      await orderRepository.createStatusHistory(
-        {
-          orderId,
-          oldStatus: order.status,
-          newStatus: OrderStatus.READY_FOR_PICKUP,
-          changedBy: captainId,
-          remarks: reason
-        },
-        tx
-      );
-      return this.details(orderId);
-    });
+    const task = await deliveryTaskService.shopOrderDelivery(orderId);
+    return deliveryTaskService.captainReject(captainId, task.id, { reason });
   },
 
   async captainPickedUp(captainId: string, orderId: string) {
-    const order = await this.details(orderId);
-    if (order.captainId !== captainId || order.status !== OrderStatus.ASSIGNED_TO_CAPTAIN) {
-      throw new AppError(
-        "Invalid order status",
-        StatusCodes.BAD_REQUEST,
-        ERROR_CODES.INVALID_ORDER_STATUS
-      );
-    }
-
-    return prisma.$transaction(async (tx) => {
-      await orderRepository.updateAssignment(
-        orderId,
-        captainId,
-        {
-          status: DeliveryAssignmentStatus.PICKED_UP,
-          pickedUpAt: new Date()
-        },
-        tx
-      );
-      await orderRepository.updateOrder(
-        orderId,
-        {
-          status: OrderStatus.OUT_FOR_DELIVERY,
-          pickedUpAt: new Date()
-        },
-        tx
-      );
-      await orderRepository.createStatusHistory(
-        {
-          orderId,
-          oldStatus: order.status,
-          newStatus: OrderStatus.OUT_FOR_DELIVERY,
-          changedBy: captainId,
-          remarks: "Order picked up by captain"
-        },
-        tx
-      );
-      return this.details(orderId);
-    });
+    return this.captainPickedUpDelivery(captainId, orderId);
   },
 
   async captainDeliver(
@@ -540,7 +531,7 @@ export const orderService = {
     input: { paymentCollected?: boolean; collectedAmount?: number; deliveryProofImage?: string }
   ) {
     const order = await this.details(orderId);
-    if (order.captainId !== captainId || order.status !== OrderStatus.OUT_FOR_DELIVERY) {
+    if (order.captainId !== captainId || order.status !== OrderStatus.PICKED_UP) {
       throw new AppError(
         "Invalid order status",
         StatusCodes.BAD_REQUEST,

@@ -63,7 +63,7 @@ lowStockAlertJob
 
 # 14. Real-Time Events
 
-Backend should be ready for real-time assignment using Socket.IO or WebSocket-style event delivery. FCM can remain a later integration if mobile push is not yet installed.
+Backend should use Socket.IO or an equivalent websocket layer for real-time assignment. FCM can remain a later integration if mobile push is not yet installed.
 
 ```txt
 captain:connect
@@ -73,6 +73,7 @@ captain:location_update
 captain:task_offer_received
 captain:task_offer_expired
 captain:task_accepted
+captain:task_removed
 captain:task_cancelled
 captain:task_status_updated
 captain:earnings_updated
@@ -82,6 +83,17 @@ captain_location_updated
 delivery_status_updated
 order_out_for_delivery
 order_delivered
+```
+
+Realtime delivery behavior rules:
+
+```txt
+new ready-for-pickup or ready-for-delivery tasks should be pushed live to all eligible nearby captains
+the same nearby task may be visible to multiple captains at once
+first valid acceptance wins
+losing captains must receive immediate removal or expiry event
+customer and shop should not receive captain live location before assignment policy allows it
+after assignment, tracking payloads may stream through delivery-task or order rooms
 ```
 
 ---
@@ -156,8 +168,20 @@ Additional delivery and captain environment variables:
 CAPTAIN_MATCH_RADIUS_KM=5
 CAPTAIN_MATCH_LIMIT=10
 CAPTAIN_TASK_OFFER_EXPIRES_IN_SECONDS=45
+CAPTAIN_LOCATION_UPDATE_INTERVAL_SECONDS=15
+CAPTAIN_TRACKING_HISTORY_ENABLED=true
 SOCKET_ENABLED=true
 FCM_ENABLED=false
+```
+
+Mapping and dispatch environment notes:
+
+```txt
+pickup and drop coordinates are required for nearby matching
+captain current location should be refreshed on app open, online toggle, and background interval
+captain offer broadcast should be socket-driven, not poll-only
+if map routing SDK is not installed yet, frontend may render pickup and drop pins with straight-line distance as phase 1
+route polyline, navigation deep links, and advanced ETA can be added without changing delivery_task schema
 ```
 
 ## 17. Direct Upload Flow

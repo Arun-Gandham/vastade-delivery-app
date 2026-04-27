@@ -170,6 +170,24 @@ createdAt TIMESTAMP
 updatedAt TIMESTAMP
 ```
 
+Recommended indexes and constraints:
+
+```txt
+INDEX(taskType, status)
+INDEX(referenceTable, referenceId)
+INDEX(captainId, status)
+INDEX(pickupLatitude, pickupLongitude)
+INDEX(dropLatitude, dropLongitude)
+```
+
+Operational notes:
+
+```txt
+pickup and drop coordinates are required for captain matching and map tracking
+captainId stays NULL until a winning acceptance transaction succeeds
+status should move through created -> searching_captain -> offered_to_captains -> accepted -> picked_up -> delivered or failed
+```
+
 ## captain_task_offers
 
 ```txt
@@ -189,6 +207,22 @@ updatedAt TIMESTAMP
 UNIQUE(deliveryTaskId, captainId)
 ```
 
+Recommended indexes:
+
+```txt
+INDEX(captainId, status, expiresAt)
+INDEX(deliveryTaskId, status)
+```
+
+Operational notes:
+
+```txt
+multiple captains may receive parallel offers for the same delivery task
+only one offer may end in accepted status
+all other open offers should become expired or cancelled when one captain wins
+offer rows support captain dashboard inbox visibility
+```
+
 ## captain_locations
 
 ```txt
@@ -199,6 +233,20 @@ longitude DECIMAL(10,7)
 heading DECIMAL(10,2) NULL
 speed DECIMAL(10,2) NULL
 createdAt TIMESTAMP
+```
+
+Recommended indexes:
+
+```txt
+INDEX(captainId, createdAt)
+INDEX(latitude, longitude)
+```
+
+Operational notes:
+
+```txt
+latest location powers nearby captain matching and live delivery tracking
+historical points support route replay, support debugging, and future analytics
 ```
 
 ## captain_earnings

@@ -37,7 +37,7 @@ export const useShopOrdersQuery = (shopId: string) =>
 
 export const useCaptainOrdersQuery = () =>
   useQuery({
-    queryKey: queryKeys.captainOrders,
+    queryKey: queryKeys.captainActiveOrders,
     queryFn: orderApi.adminOrders,
     enabled: false,
   });
@@ -52,11 +52,7 @@ export const useOrderMutations = () => {
       onSuccess: () => queryClient.invalidateQueries({ queryKey: ["orders"] }),
     }),
     confirmShopOrder: useMutation({
-      mutationFn: orderApi.confirmOrder,
-      onSuccess: () => queryClient.invalidateQueries({ queryKey: ["shop-orders"] }),
-    }),
-    markPacking: useMutation({
-      mutationFn: orderApi.markPacking,
+      mutationFn: orderApi.acceptOrderByShop,
       onSuccess: () => queryClient.invalidateQueries({ queryKey: ["shop-orders"] }),
     }),
     readyForPickup: useMutation({
@@ -72,6 +68,14 @@ export const useOrderMutations = () => {
       mutationFn: ({ orderId, captainId }: { orderId: string; captainId: string }) =>
         orderApi.assignCaptainByShop(orderId, captainId),
       onSuccess: () => queryClient.invalidateQueries({ queryKey: ["shop-orders"] }),
+    }),
+    adminAcceptOrder: useMutation({
+      mutationFn: orderApi.adminAcceptOrder,
+      onSuccess: () => queryClient.invalidateQueries({ queryKey: queryKeys.adminOrders }),
+    }),
+    adminReadyForPickup: useMutation({
+      mutationFn: orderApi.adminReadyForPickup,
+      onSuccess: () => queryClient.invalidateQueries({ queryKey: queryKeys.adminOrders }),
     }),
     adminUpdateStatus: useMutation({
       mutationFn: ({ orderId, status, remarks }: { orderId: string; status: string; remarks?: string }) =>

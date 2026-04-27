@@ -61,6 +61,7 @@ http://localhost:5000/api-docs
 - shops do not create or approve captains
 - grocery and parcel dispatch both flow through generic `delivery_tasks`
 - captain assignment is modeled as task offers and acceptance, not only direct order-to-captain coupling
+- Socket.IO now powers captain-side realtime task offers, task removal after competing acceptance, and live captain status propagation
 
 ## S3 image flow
 
@@ -110,6 +111,7 @@ S3_BUCKET_PUBLIC=false
 - Transactional order placement, cancellation, captain delivery, and inventory adjustment
 - Generic delivery-task creation when grocery orders become ready for pickup
 - Nearby approved online captain matching using captain location and task offers
+- Realtime captain socket rooms for live delivery offers and removal after first acceptance
 - Soft-delete behavior for catalog entities through `isActive`
 - Customer-facing APIs that can be reused by the web frontend and future mobile apps
 - Queue bootstrap for order notifications using BullMQ

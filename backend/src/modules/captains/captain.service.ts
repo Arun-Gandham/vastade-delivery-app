@@ -1,5 +1,6 @@
 import {
   CaptainAvailabilityStatus,
+  DeliveryTaskStatus,
   CaptainRegistrationStatus,
   UserRole
 } from "@prisma/client";
@@ -79,6 +80,10 @@ export const captainService = {
     }
 
     const updated = await captainRepository.updateStatusByUserId(userId, input);
+    socketGateway.syncCaptainOnlineRoom(
+      userId,
+      input.availabilityStatus === CaptainAvailabilityStatus.ONLINE
+    );
     socketGateway.emitEvent(
       input.availabilityStatus === CaptainAvailabilityStatus.OFFLINE
         ? "captain:go_offline"
@@ -95,17 +100,41 @@ export const captainService = {
   async updateLocation(userId: string, input: CaptainLocationUpdateInput) {
     const updated = await captainRepository.updateLocationByUserId(userId, input);
     if (updated?.id) {
+      const activeTask = await prisma.deliveryTask.findFirst({
+        where: {
+          captainId: updated.id,
+          status: {
+            in: [
+              DeliveryTaskStatus.ACCEPTED,
+              DeliveryTaskStatus.CAPTAIN_REACHED_PICKUP,
+              DeliveryTaskStatus.PICKED_UP,
+              DeliveryTaskStatus.CAPTAIN_REACHED_DROP
+            ]
+          }
+        },
+        select: {
+          id: true,
+          referenceId: true
+        }
+      });
+
       socketGateway.emitEvent("captain:location_update", {
         captainId: updated.id,
         latitude: input.latitude,
         longitude: input.longitude,
         heading: input.heading,
-        speed: input.speed
+        speed: input.speed,
+        taskId: activeTask?.id,
+        referenceId: activeTask?.referenceId
       });
       socketGateway.emitEvent("captain_location_updated", {
         captainId: updated.id,
         latitude: input.latitude,
-        longitude: input.longitude
+        longitude: input.longitude,
+        heading: input.heading,
+        speed: input.speed,
+        taskId: activeTask?.id,
+        referenceId: activeTask?.referenceId
       });
     }
     return updated;

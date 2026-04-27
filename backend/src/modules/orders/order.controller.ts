@@ -49,18 +49,9 @@ export const orderController = {
       req.authUser!.userId,
       req.authUser!.role,
       getParam(req.params.orderId),
-      OrderStatus.CONFIRMED
+      OrderStatus.ACCEPTED
     );
-    return sendSuccess(res, "Order confirmed successfully", data);
-  },
-  async markPacking(req: Request, res: Response) {
-    const data = await orderService.shopUpdateStatus(
-      req.authUser!.userId,
-      req.authUser!.role,
-      getParam(req.params.orderId),
-      OrderStatus.PACKING
-    );
-    return sendSuccess(res, "Order moved to packing", data);
+    return sendSuccess(res, "Order accepted successfully", data);
   },
   async readyForPickup(req: Request, res: Response) {
     const data = await orderService.shopUpdateStatus(
@@ -106,16 +97,32 @@ export const orderController = {
     );
     return sendSuccess(res, "Order status updated successfully", data);
   },
+  async adminAccept(req: Request, res: Response) {
+    const data = await orderService.adminAccept(req.authUser!.userId, getParam(req.params.orderId));
+    return sendSuccess(res, "Order accepted successfully", data);
+  },
+  async adminReadyForPickup(req: Request, res: Response) {
+    const data = await orderService.adminReadyForPickup(req.authUser!.userId, getParam(req.params.orderId));
+    return sendSuccess(res, "Order ready for pickup", data);
+  },
   async availableCaptains(_req: Request, res: Response) {
     const data = await orderService.availableCaptains();
     return sendSuccess(res, "Available captains fetched successfully", data);
+  },
+  async captainAvailableOrders(req: Request, res: Response) {
+    const data = await orderService.captainAvailableOrders(req.authUser!.userId);
+    return sendSuccess(res, "Available captain orders fetched successfully", data);
+  },
+  async captainActiveOrders(req: Request, res: Response) {
+    const data = await orderService.captainActiveOrders(req.authUser!.userId);
+    return sendSuccess(res, "Active captain orders fetched successfully", data);
   },
   async captainOrders(req: Request, res: Response) {
     const data = await orderService.captainOrders(req.authUser!.userId);
     return sendSuccess(res, "Captain orders fetched successfully", data);
   },
   async captainAccept(req: Request, res: Response) {
-    const data = await orderService.captainAccept(req.authUser!.userId, getParam(req.params.orderId));
+    const data = await orderService.captainAcceptAvailableOrder(req.authUser!.userId, getParam(req.params.orderId));
     return sendSuccess(res, "Order accepted successfully", data);
   },
   async captainReject(req: Request, res: Response) {
@@ -127,18 +134,14 @@ export const orderController = {
     return sendSuccess(res, "Order rejected successfully", data);
   },
   async captainPickedUp(req: Request, res: Response) {
-    const data = await orderService.captainPickedUp(
+    const data = await orderService.captainPickedUpDelivery(
       req.authUser!.userId,
       getParam(req.params.orderId)
     );
     return sendSuccess(res, "Order picked up successfully", data);
   },
   async captainDeliver(req: Request, res: Response) {
-    const data = await orderService.captainDeliver(
-      req.authUser!.userId,
-      getParam(req.params.orderId),
-      req.body
-    );
+    const data = await orderService.captainDeliveredOrder(req.authUser!.userId, getParam(req.params.orderId));
     return sendSuccess(res, "Order delivered successfully", data);
   }
 };

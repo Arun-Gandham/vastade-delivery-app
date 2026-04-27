@@ -62,5 +62,6 @@ apiRouter.use("/shop-owner", shopDashboardRouter);
 apiRouter.use("/shop", shopDeliveryTaskRouter);
 
 apiRouter.use("/captains", captainOrderRouter);
+apiRouter.use("/captain", captainOrderRouter);
 apiRouter.use("/captains", captainTaskRouter);
 apiRouter.use("/captain", captainTaskRouter);

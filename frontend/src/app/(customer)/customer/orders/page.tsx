@@ -23,9 +23,9 @@ export default function CustomerOrdersPage() {
             onChange={(event) => setStatus(event.target.value)}
             options={[
               { label: "All statuses", value: "" },
-              { label: "Placed", value: "PLACED" },
-              { label: "Confirmed", value: "CONFIRMED" },
-              { label: "Packing", value: "PACKING" },
+              { label: "Pending", value: "PENDING" },
+              { label: "Accepted", value: "ACCEPTED" },
+              { label: "Picked Up", value: "PICKED_UP" },
               { label: "Delivered", value: "DELIVERED" },
               { label: "Cancelled", value: "CANCELLED" },
             ]}
